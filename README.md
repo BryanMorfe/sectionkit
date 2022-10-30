@@ -50,7 +50,7 @@ class SectionProvider : CollectionSectionProvider {
 }
 ```
 
-Declaring the typography of Section Provider and Section Controller is the only constraint that determine whether section providers and controllers are compatible. Ultimately, though, control is in the hands of the developer as it is easy to make a Section Controller compatible with _any_ section provider by using generic typography, such as `AnyHashable`, etc.
+Declaring the typography of Section Providers and Section Controllers is the only constraint that determines whether they are compatible. Ultimately, though, control is in the hands of the developer as it is easy to design a Section Controller compatible with _any_ section provider by using generic typography, such as `AnyHashable`, etc.
 
 Second, in order to allow complete independence between `CollectionSectionProvider`s as well as prevent section providers from modifying properties that affect other section providers, directly querying the underlying collection view, data source, or layout is discouraged. `CollectionSectionController`s implement the methods that a section provider exactly needs for functionality. For example, to dequeue a cell, instead of calling:
 
