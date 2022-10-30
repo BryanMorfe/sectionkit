@@ -22,8 +22,8 @@ In summary, three great UIKit features come together to make SectionKit possible
 
 To formalize the philosophy, there are four entities that should be known:
 - `CollectionSectionController`: A view controller that manages a collection view to lay out content provided by `CollectionSectionProvider`s.
-- `CollectionSectionProvider`: A protocol adopted by objects that which to provide content to be displayed in a `CollectionSectionController`.
-- `CollectionSectionControllerDelegate`: A protocol adopted by objects that which to delegate messages from a `CollectionSectionController` on behalf of a `CollectionSectionProvider`.
+- `CollectionSectionProvider`: A protocol adopted by objects that wish to provide content to be displayed in a `CollectionSectionController`.
+- `CollectionSectionControllerDelegate`: A protocol adopted by objects that wish to delegate messages from a `CollectionSectionController` on behalf of a `CollectionSectionProvider`.
 - `CollectionSectionControllerDataSourcePrefetching`: A protocol adopted by objects that which to respond to advanced warnings of data requirements from a `CollectionSectionController` on behalf of a `CollectionSectionProvider`. 
 
 These four entities provide the core functionality of SectionKit. They are designed to fulfill and abide by the philosophies mentioned above.
