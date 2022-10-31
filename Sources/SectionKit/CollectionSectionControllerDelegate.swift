@@ -144,15 +144,25 @@ public protocol CollectionSectionControllerDelegate<SectionIdentifierType, ItemI
         animator: UIContextMenuInteractionAnimating?
     )
     
+    @available(iOS 16, *)
     /// Asks the delegate for a context-menu configuration for the items at the specified index paths.
     func collectionSectionController(
         _ sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>,
         contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
-        with point: CGPoint
+        point: CGPoint
+    ) -> UIContextMenuConfiguration?
+    
+    /// Returns a context menu configuration for the item at a point.
+    @available(iOS, deprecated: 16.0)
+    func collectionSectionController(
+        _ sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
     ) -> UIContextMenuConfiguration?
     
     /// Asks the delegate for a preview of the item at the specified index path when a context-menu
     /// interaction begins.
+    @available(iOS 16, *)
     func collectionSectionController(
         _ sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>,
         contextMenuConfiguration configuration: UIContextMenuConfiguration,
@@ -161,6 +171,7 @@ public protocol CollectionSectionControllerDelegate<SectionIdentifierType, ItemI
     
     /// Asks the delegate for a preview of the item at the specified index path when a context-menu
     /// interaction ends.
+    @available(iOS 16, *)
     func collectionSectionController(
         _ sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>,
         contextMenuConfiguration configuration: UIContextMenuConfiguration,
@@ -175,6 +186,7 @@ public protocol CollectionSectionControllerDelegate<SectionIdentifierType, ItemI
         canEditItemAt indexPath: IndexPath
     ) -> Bool
     
+    @available(iOS 16, *)
     /// Asks the delegate whether to perform a primary action for the cell at the
     /// specified index path.
     func collectionSectionController(
@@ -182,6 +194,7 @@ public protocol CollectionSectionControllerDelegate<SectionIdentifierType, ItemI
         canPerformPrimaryActionForItemAt indexPath: IndexPath
     ) -> Bool
     
+    @available(iOS 16, *)
     /// Tells the delegate to perform the primary action for the cell at the specified index path.
     func collectionSectionController(
         _ sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>,
@@ -365,7 +378,13 @@ public extension CollectionSectionControllerDelegate {
     func collectionSectionController(
         _ sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>,
         contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
-        with point: CGPoint
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? { return nil }
+    
+    func collectionSectionController(
+        _ sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
     ) -> UIContextMenuConfiguration? { return nil }
     
     func collectionSectionController(

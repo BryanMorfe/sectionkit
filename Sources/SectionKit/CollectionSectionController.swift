@@ -287,6 +287,7 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         }
     }
     
+    @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
         guard let indexPath = indexPaths.first,
               let sectionProvider = sectionProvider(for: indexPath),
@@ -294,9 +295,20 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
               let indexPath = indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath) else {
             return nil
         }
-        return context.delegate?.collectionSectionController(self, contextMenuConfigurationForItemsAt: [indexPath], with: point)
+        return context.delegate?.collectionSectionController(self, contextMenuConfigurationForItemsAt: [indexPath], point: point)
     }
     
+    @available(iOS, introduced: 13.0, deprecated: 16.0)
+    open func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard let sectionProvider = sectionProvider(for: indexPath),
+              let context = sectionProviderContext(for: sectionProvider),
+              let indexPath = indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath) else {
+            return nil
+        }
+        return context.delegate?.collectionSectionController(self, contextMenuConfigurationForItemAt: indexPath, point: point)
+    }
+    
+    @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, highlightPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -306,6 +318,7 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, contextMenuConfiguration: configuration, highlightPreviewForItemAt: indexPath)
     }
     
+    @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, dismissalPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -324,6 +337,7 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, canEditItemAt: indexPath) ?? true
     }
     
+    @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, canPerformPrimaryActionForItemAt indexPath: IndexPath) -> Bool {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -333,6 +347,7 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, canPerformPrimaryActionForItemAt: indexPath) ?? true
     }
     
+    @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, performPrimaryActionForItemAt indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -520,7 +535,7 @@ public extension CollectionSectionController {
     ///
     /// - Parameters:
     ///   - sectionProvider: The section provider for which an associated delegate is to be removed.
-    func removeDelegate(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
+    func removeDelegate(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
         if let context = sectionProviderContext(for: sectionProvider) {
             context.delegate = nil
         }
@@ -557,7 +572,7 @@ public extension CollectionSectionController {
     ///
     /// - Parameters:
     ///   - sectionProvider: The section provider for which an associated prefetching data source is to be removed.
-    func removePrefetchingDataSource(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
+    func removePrefetchingDataSource(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
         if let context = sectionProviderContext(for: sectionProvider) {
             context.prefetchingDataSource = nil
         }
@@ -662,6 +677,7 @@ public extension CollectionSectionController {
         _collectionView.selectionFollowsFocus
     }
     
+    @available(iOS 16, *)
     /// The mode that the collection view uses for invalidating the size of self-sizing cells.
     var selfSizingInvalidation: UICollectionView.SelfSizingInvalidation {
         _collectionView.selfSizingInvalidation
@@ -670,7 +686,7 @@ public extension CollectionSectionController {
     // MARK: Getting the state of the collection view
     
     /// Returns the number of items for the specified section index associated with the section provider.
-    func numberOfItems(inSection section: Int, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
+    func numberOfItems(inSection section: Int, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
         guard let offset = sectionOffset(for: sectionProvider) else {
             return nil
         }
@@ -678,7 +694,7 @@ public extension CollectionSectionController {
     }
     
     /// Returns the number of sections displayed by the section controller for a section provider.
-    func numberOfSections(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
+    func numberOfSections(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
         guard let context = sectionProviderContext(for: sectionProvider) else {
             return nil
         }
@@ -686,7 +702,7 @@ public extension CollectionSectionController {
     }
     
     /// An array of visible cells currently displayed by the section controller that belong to the provided section provider.
-    func visibleCells(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [UICollectionViewCell] {
+    func visibleCells(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [UICollectionViewCell] {
         var visibleCells = [UICollectionViewCell]()
         let allVisibleCells = collectionView.visibleCells
         
@@ -700,7 +716,7 @@ public extension CollectionSectionController {
     }
     
     /// Gets an array of the visible supplementary views of the specified kind associated with a section provider.
-    func visibleSupplementaryViews(ofKind elementKind: String, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [UICollectionReusableView] {
+    func visibleSupplementaryViews(ofKind elementKind: String, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [UICollectionReusableView] {
         var visibleSupplementaryViews = [UICollectionReusableView]()
         let indexPathsForVisibleSupplementaryViews = collectionView.indexPathsForVisibleSupplementaryElements(ofKind: elementKind)
         
@@ -714,7 +730,7 @@ public extension CollectionSectionController {
     }
     
     /// Gets the layout information for the item at the specified index path for the provided section provider.
-    func layoutAttributesForItem(at indexPath: IndexPath, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewLayoutAttributes? {
+    func layoutAttributesForItem(at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewLayoutAttributes? {
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
@@ -722,7 +738,7 @@ public extension CollectionSectionController {
     }
     
     /// Gets the layout information for the specified supplementary view associated with the provided section provider.
-    func layoutAttributesForSupplementaryElement(ofKind elementKind: String, at indexPath: IndexPath, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewLayoutAttributes? {
+    func layoutAttributesForSupplementaryElement(ofKind elementKind: String, at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewLayoutAttributes? {
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
@@ -734,7 +750,7 @@ public extension CollectionSectionController {
     // MARK: Selecting Cells
     
     /// Returns the index paths for the selected items associated with the provided section provider.
-    func indexPathsForSelectedItems(in sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath] {
+    func indexPathsForSelectedItems(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath] {
         let indexPaths = collectionView.indexPathsForVisibleItems
         var indexPathsForSelectedItems = [IndexPath]()
         
@@ -748,7 +764,7 @@ public extension CollectionSectionController {
     }
     
     /// Gets the cell object at the index path you specify.
-    func cellForItem(at indexPath: IndexPath, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewCell? {
+    func cellForItem(at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewCell? {
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
@@ -764,14 +780,14 @@ public extension CollectionSectionController {
     }
     
     /// Gets the index paths of the visible items in the section controller for a section provider.
-    func indexPathsForVisibleItems(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath]? {
+    func indexPathsForVisibleItems(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath]? {
         let indexPaths = collectionView.indexPathsForVisibleItems
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
         return map[sectionProvider.id]
     }
     
     /// Gets the index paths of all visible supplementary views of the specified type in a section provider.
-    func indexPathsForVisibleSupplementaryElements(ofKind elementKind: String, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath]? {
+    func indexPathsForVisibleSupplementaryElements(ofKind elementKind: String, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath]? {
         let indexPaths = collectionView.indexPathsForVisibleSupplementaryElements(ofKind: elementKind)
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
         return map[sectionProvider.id]
@@ -785,21 +801,15 @@ public extension CollectionSectionController {
         return collectionView.supplementaryView(forElementKind: elementKind, at: indexPath)
     }
     
-    /// Gets an array of the visible supplementary views of the specified kind for a section provider.
-//    func visibleSupplementaryViews(ofKind elementKind: String, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [UICollectionReusableView]? {
-//        return indexPathsForVisibleSupplementaryElements(ofKind: elementKind, for: sectionProvider)?
-//            .compactMap { self.supplementaryView(forElementKind: elementKind, at: $0, for: sectionProvider) }
-//    }
-    
     /// Selects an item at a specified index path relative to the section provider.
-    func selectItem(at indexPath: IndexPath, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, animated: Bool, scrollPosition: UICollectionView.ScrollPosition) {
+    func selectItem(at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, animated: Bool, scrollPosition: UICollectionView.ScrollPosition) {
         if let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) {
             collectionView.selectItem(at: indexPath, animated: animated, scrollPosition: scrollPosition)
         }
     }
     
     /// Deselects the item at the specified index path relative to the section provider.
-    func deselectItem(at indexPath: IndexPath, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, animated: Bool) {
+    func deselectItem(at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, animated: Bool) {
         if let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) {
             collectionView.deselectItem(at: indexPath, animated: animated)
         }
@@ -810,7 +820,7 @@ public extension CollectionSectionController {
         using registration: UICollectionView.CellRegistration<Cell, Item>,
         for indexPath: IndexPath,
         item: Item?,
-        for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>
+        sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>
     ) -> Cell where Cell : UICollectionViewCell {
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             // TODO: Throw an error instead
@@ -869,14 +879,6 @@ public extension CollectionSectionController {
         }
         return collectionView.dequeueReusableSupplementaryView(ofKind: elementKind, withReuseIdentifier: identifier, for: indexPath)
     }
-    
-    /// Dequeues a reusable supplementary view located by its identifier and kind.
-    private func indexPathRelativeToSectionProvider(_ sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, indexPath: IndexPath) -> IndexPath? {
-        guard let sectionOffset = sectionOffset(for: sectionProvider) else {
-            return nil
-        }
-        return IndexPath(item: indexPath.item, section: indexPath.section - sectionOffset)
-    }
 }
 
 // MARK: Data Source Methods
@@ -927,9 +929,9 @@ public extension CollectionSectionController {
     // MARK: Updating Data
     
     /// Returns a representation of the current state of the data in the section controller for a section provider.
-    func snapshot(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> DiffableDataSourceSnapshot {
+    func snapshotForSectionProvider(_ sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> DiffableDataSourceSnapshot {
         var snapshot = DiffableDataSourceSnapshot()
-        let sections = sections(for: sectionProvider)
+        let sections = sectionIdentifiers(for: sectionProvider)
         snapshot.appendSections(sections)
         for section in sections {
             let items = dataSource.snapshot().itemIdentifiers(inSection: section)
@@ -975,10 +977,10 @@ public extension CollectionSectionController {
 // MARK: Section Provider Identification
 private extension CollectionSectionController {
     
+    /// An object that encapsulates contextual information about a section provider, such as its number of sections,
+    /// delegate, and prefetching data source.
     class CollectionSectionProviderContext : Identifiable, Hashable, Equatable {
-        var id: UUID = UUID()
-        
-        var sectionProvider: any CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>
+        let sectionProvider: any CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>
         var numberOfSections: Int = 0
         weak var delegate: (any CollectionSectionControllerDelegate<SectionIdentifierType, ItemIdentifierType>)?
         weak var prefetchingDataSource: (any CollectionSectionControllerDataSourcePrefetching<SectionIdentifierType, ItemIdentifierType>)?
@@ -997,6 +999,11 @@ private extension CollectionSectionController {
         }
     }
     
+    /// Updates the number of sections for a section provider after applying a snapshot.
+    ///
+    /// - Parameters:
+    ///   - sectionProvider: The section provider for which to update the number of sections.
+    ///   - snapshot: The snapshot that will be applied.
     func setNumberOfSections(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, afterApplying snapshot: DiffableDataSourceSnapshot) {
         guard let context = sectionProviderContext(for: sectionProvider) else {
             return
@@ -1004,10 +1011,18 @@ private extension CollectionSectionController {
         context.numberOfSections = snapshot.numberOfSections
     }
     
+    /// Returns the context for a section provider.
     func sectionProviderContext(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> CollectionSectionProviderContext? {
         return sectionProviderToContext[sectionProvider.id]
     }
     
+    /// Returns the section offset for a section provider.
+    ///
+    /// A section offset is the index of the first section for a given section provider. This offset
+    /// can be used to determine the position of a section provider in the controller.
+    ///
+    /// - Parameters:
+    ///   - sectionProvider: The section provider for which to compute its offset.
     func sectionOffset(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
         guard let context = sectionProviderContext(for: sectionProvider) else {
             return nil
@@ -1024,14 +1039,17 @@ private extension CollectionSectionController {
         return offset
     }
     
-    func sectionProvider(with sectionOffset: Int) -> (any CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>)? {
-        return sectionProviderForSectionWithIndex(sectionOffset)
-    }
-    
+    /// Returns the section provider for an absolute index path.
+    ///
+    /// The index path is absolute, i.e., the real index path used by the data source and collection view.
+    ///
+    /// > Important: This method requires the absolute index path, i.e., an index path provided by the underlying
+    /// collection view or data source.
     func sectionProvider(for indexPath: IndexPath) -> (any CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>)? {
         return sectionProviderForSectionWithIndex(indexPath.section)
     }
     
+    /// Returns the section provider for a section identifier.
     func sectionProvider(for sectionIdentifier: SectionIdentifierType) -> (any CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>)? {
         guard let index = dataSource.snapshot().indexOfSection(sectionIdentifier) else {
             return nil
@@ -1040,6 +1058,7 @@ private extension CollectionSectionController {
         return sectionProviderForSectionWithIndex(index)
     }
     
+    /// Returns the section provider that ows the section with a provided index.
     func sectionProviderForSectionWithIndex(_ index: Int) -> (any CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>)? {
         var offset = 0
         for sectionProviderContext in sectionProviderContexts {
@@ -1066,11 +1085,34 @@ private extension CollectionSectionController {
         return IndexPath(item: indexPath.item, section: indexPath.section + sectionOffset)
     }
     
+    /// Returns the relative index for a section provider.
+    ///
+    /// - Parameters:
+    ///   - sectionProvider: The section provider to reference.
+    ///   - indexPath: The absolute index path.
+    ///
+    /// - Returns: The index path relative to the provided section provider.
+    private func indexPathRelativeToSectionProvider(_ sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, indexPath: IndexPath) -> IndexPath? {
+        guard let sectionOffset = sectionOffset(for: sectionProvider) else {
+            return nil
+        }
+        return IndexPath(item: indexPath.item, section: indexPath.section - sectionOffset)
+    }
+    
+    /// Returns the index of a section provider.
+    ///
+    /// The index is the zero-based position in the array of section providers. If the section
+    /// provider is not managed by the controller, this method returns `nil`.
+    ///
+    /// > A section provider `index` is different from a section provider `offset` in that the latter
+    /// is the index of the first section that the provider owns, whereas the former does not count the
+    /// number of sections in any preceding section providers.
     func index(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
         return sectionProviderContexts.firstIndex(where: { $0.sectionProvider.id == sectionProvider.id } )
     }
     
-    func sections(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [SectionIdentifierType] {
+    /// Returns all section identifiers for a section provider.
+    func sectionIdentifiers(for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [SectionIdentifierType] {
         guard let context = sectionProviderContext(for: sectionProvider),
               let offset = sectionOffset(for: sectionProvider),
               context.numberOfSections > 0 else {
@@ -1086,6 +1128,15 @@ private extension CollectionSectionController {
         return Array(snapshot.sectionIdentifiers[offset...rangeHigherBound])
     }
     
+    /// Returns a map of section provider ID to relative index paths given an array of absolute index paths.
+    ///
+    /// This method splits the absolute index paths by section provider, then converts to absolute index paths
+    /// to be relative to the owner section providers. The resulting map looks something like this:
+    /// ```
+    ///   SectionProvider1.ID -> [IndexPathsRelativeToSectionProvider1],
+    ///   SectionProvider2.ID -> [IndexPathsRelativeToSectionProvider2],
+    ///   ...
+    /// ```
     func sectionProviderIDToRelativeIndexPathsMap(from indexPaths: [IndexPath]) -> [ObjectIdentifier : [IndexPath]] {
         var map = [ObjectIdentifier : [IndexPath]]()
         for indexPath in indexPaths {
@@ -1100,8 +1151,13 @@ private extension CollectionSectionController {
         return map
     }
     
+    /// Returns a resulting snapshot after joining with the snapshot for a given section provider.
+    ///
+    /// This method replaces all section identifiers and their items for a specific section provider with those
+    /// of the provided snapshot, if any. This operation guarantees the section provider section identifiers will
+    /// be contiguous and will respect the order of all section providers in the controller.
     func snapshotByJoining(with snapshot: DiffableDataSourceSnapshot, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> DiffableDataSourceSnapshot {
-        let sections = sections(for: sectionProvider)
+        let sections = sectionIdentifiers(for: sectionProvider)
         var currentSnapshot = dataSource.snapshot()
         currentSnapshot.deleteSections(sections)
         
@@ -1111,7 +1167,7 @@ private extension CollectionSectionController {
         /// Insert sections in correct index
         if let sectionProviderIndex, sectionProviderIndex > 0 {
             let precedingSectionProviderContext = sectionProviderContexts[sectionProviderIndex - 1]
-            if let precedingSection = self.sections(for: precedingSectionProviderContext.sectionProvider).first {
+            if let precedingSection = self.sectionIdentifiers(for: precedingSectionProviderContext.sectionProvider).first {
                 currentSnapshot.insertSections(newSnapshotSections, afterSection: precedingSection)
             } else {
                 currentSnapshot.appendSections(newSnapshotSections)
@@ -1128,8 +1184,9 @@ private extension CollectionSectionController {
         return currentSnapshot
     }
     
+    /// Returns a snapshot resulting by removing all data associated with a section provider.
     func snapshotByRemovingSectionProvider(_ sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> DiffableDataSourceSnapshot {
-        let sections = sections(for: sectionProvider)
+        let sections = sectionIdentifiers(for: sectionProvider)
         var snapshot = dataSource.snapshot()
         snapshot.deleteSections(sections)
         return snapshot

@@ -11,6 +11,10 @@
 - ``init(sectionProviders:)``
 - ``init(coder:)``
 
+## Responding to View Events
+
+- ``viewDidLoad()``
+
 ### Modifying Section Providers
 
 - ``addSectionProvider(_:)``
@@ -30,7 +34,7 @@
 
 ### Updating Section Provider Data
 
-- ``snapshot(for:)``
+- ``snapshotForSectionProvider(_:)``
 - ``apply(_:animatingDifferences:sectionProvider:)``
 - ``apply(_:animatingDifferences:sectionProvider:completion:)``
 - ``applySnapshotUsingReloadData(_:sectionProvider:)``
@@ -40,18 +44,18 @@
 
 - ``isPrefetchingEnabled``
 - ``addPrefetchingDataSource(_:sectionProvider:)``
-- ``removePrefetchingDataSource(for:)``
+- ``removePrefetchingDataSource(forSectionProvider:)``
 - ``CollectionSectionControllerDataSourcePrefetching``
 
 ### Managing Interactions with Section Provider Content
 
 - ``addDelegate(_:sectionProvider:)``
-- ``removeDelegate(for:)``
+- ``removeDelegate(forSectionProvider:)``
 - ``CollectionSectionControllerDelegate``
 
 ### Creating Cells for Section Providers
 
-- ``dequeueConfiguredReusableCell(using:for:item:for:)``
+- ``dequeueConfiguredReusableCell(using:for:item:sectionProvider:)``
 - ``register(_:forCellWithReuseIdentifier:)-7mthu``
 - ``register(_:forCellWithReuseIdentifier:)-50v2u``
 - ``dequeueReusableCell(withReuseIdentifier:for:sectionProvider:)``
@@ -65,15 +69,15 @@
 
 ### Getting the State of a Section Provider
 
-- ``numberOfSections(for:)``
-- ``numberOfItems(inSection:for:)``
-- ``visibleCells(for:)``
+- ``numberOfSections(forSectionProvider:)``
+- ``numberOfItems(inSection:sectionProvider:)``
+- ``visibleCells(forSectionProvider:)``
 
 ### Selecting Cells for a Section Provider
 
-- ``indexPathsForSelectedItems(in:)``
-- ``selectItem(at:for:animated:scrollPosition:)``
-- ``deselectItem(at:for:animated:)``
+- ``indexPathsForSelectedItems(forSectionProvider:)``
+- ``selectItem(at:sectionProvider:animated:scrollPosition:)``
+- ``deselectItem(at:sectionProvider:animated:)``
 - ``allowsSelection``
 - ``allowsMultipleSelection``
 - ``allowsSelectionDuringEditing``
@@ -82,17 +86,17 @@
 
 ### Locating Items and Views for a Section Provider
 
-- ``indexPathsForVisibleItems(for:)``
+- ``indexPathsForVisibleItems(forSectionProvider:)``
 - ``indexPath(for:sectionProvider:)-80hfd``
-- ``cellForItem(at:for:)``
-- ``indexPathsForVisibleSupplementaryElements(ofKind:for:)``
+- ``cellForItem(at:sectionProvider:)``
+- ``indexPathsForVisibleSupplementaryElements(ofKind:sectionProvider:)``
 - ``supplementaryView(forElementKind:at:for:)``
-- ``visibleSupplementaryViews(ofKind:for:)``
+- ``visibleSupplementaryViews(ofKind:sectionProvider:)``
 
 ### Getting Layout Information for Items and Views in Section Provider
 
-- ``layoutAttributesForItem(at:for:)``
-- ``layoutAttributesForSupplementaryElement(ofKind:at:for:)``
+- ``layoutAttributesForItem(at:sectionProvider:)``
+- ``layoutAttributesForSupplementaryElement(ofKind:at:sectionProvider:)``
 
 ### Creating Headers and Footers for a Section Controller
 
