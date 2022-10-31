@@ -11,7 +11,7 @@
 - ``init(sectionProviders:)``
 - ``init(coder:)``
 
-## Responding to View Events
+### Responding to View Events
 
 - ``viewDidLoad()``
 
