@@ -63,7 +63,12 @@ let cell = collectionView.dequeueConfiguredReusableCell(using: cellRegistration,
 Section Providers would call:
 
 ```swift
-let cell = sectionController.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item, sectionProvider: self)
+let cell = sectionController.dequeueConfiguredReusableCell(
+                using: cellRegistration,
+                for: indexPath,
+                item: item,
+                sectionProvider: self
+           )
 ```
 
 Although `CollectionSectionController`s have a public property for its underlying collection view, that should only be used for classes that inherit from `CollectionSectionController`s, and, the index paths that `CollectionSectionProvider`s receive and send are relative to its content. That allows the following:
@@ -71,6 +76,6 @@ Although `CollectionSectionController`s have a public property for its underlyin
 - `CollectionSectionProvider`s have a difficult time directly interacting with the collection view and data source, further encouraging use of the `CollectionSectionController`s equivalent methods and preventing code prone to error; and,
 - Makes it easier for section providers to address and determine which content is being addressed. For example, for a section provider, an index path of (0, 0) always refers to the first item of its first section, regardless of its actual position in the `CollectionSectionController`.
 
-This is also true when implementing a delegate (`CollectionSectionControllerDelegate`) or prefetching data source (`CollectionSectionControllerDataSourcePrefetching`) on behalf of a section provider. Any messages it receives are sure to belong to that section provider or are to be received by all section providers. For example, when the delegate of a section provider receives the message `collectionSectionController(:didSelectItemAt:)` (the equivalent of `UICollectionViewDelegate`'s `collectionView(:didSelectItemAt:)`), then the index path will be relative to the section provider's content and will always be for content that belong to the section provider, whereas the method `collectionSectionControllerDidScroll(:in:)` will be received by all delegates.
+This is also true when implementing a delegate (`CollectionSectionControllerDelegate`) or prefetching data source (`CollectionSectionControllerDataSourcePrefetching`) on behalf of a section provider. Any messages it receives are sure to belong to that section provider or are to be received by all section providers. For example, when the delegate of a section provider receives the message `collectionSectionController(_:didSelectItemAt:)` (the equivalent of `UICollectionViewDelegate`'s `collectionView(_:didSelectItemAt:)`), then the index path will be relative to the section provider's content and will always be for content that belong to the section provider, whereas the method `collectionSectionControllerDidScroll(_:in:)` will be received by all delegates.
 
-For the reasons listed above, it is preferable to provide methods equivalent to those of the Collection View, Diffable Data Source, as well as a new delegate and prefetching data source protocols. The downside of that approach are of course that SectionKit must always be catching up with the new Collection View and related objects' APIs. However, that is preferable to accomplish the design philosophy approach.
+For the reasons listed above, it is preferable to provide methods equivalent to those of the Collection View, Diffable Data Source, as well as a new delegate and prefetching data source protocols instead of encouraging access to those resources. The downside of that approach are, of course, that SectionKit must always be catching up with the new Collection View and related objects' APIs. However, that is a preferable alterative.
