@@ -2,7 +2,7 @@
 
 UIKit extension to modularize app with single-responsibility reusable collection view sections.
 
-Read [documentation](https://sectionkit.com/documentation/).
+Read [documentation](https://sectionkit.com/documentation/sectionkit/).
 
 ## Design Philosophy
 SectionKit follows a simple yet powerful design philosophy:
