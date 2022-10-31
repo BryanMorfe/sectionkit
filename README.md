@@ -10,7 +10,7 @@ SectionKit follows a simple yet powerful design philosophy:
 2. A section's content container does not need to know the details of how a content provider generates its content; and,
 3. A content provider need only be concerned with its own content and not that of any other content provider.
 
-That philosophy comes with a few implications. For one, if the third point is to be true, that means that the content providers should not have access to other content providers in the content container, for example. In addition, a content container must be generic enough to contain content providers without known specific details about its implementations. Finally, a content container should be able to constrain which section providers can participate.
+That philosophy comes with a few implications. For one, a content container must be generic enough to contain content providers without knowing specific details about its implementations. Furthermore, a content container should be able to constrain which section providers can provide their content. Content providers should not have access to other content providers in the content container. In fact, content providers don't need to know whether they are third or first in the container. Finally, a content container decides which order to display the content of content providers, but content providers decide how much content they provider (i.e., a single content provide can provide 1, 2, 3, or more sections of content which are guaranteed to be contiguous in the container).
 
 In addition, having such versatility should not come with perceivable performance shortcomings. Fortunately, `UIKit` already lays out the foundation upon which SectionKit is based; _Collection Views_. Collection views are perfect for this use case because they allow developers to lay out content in an ordered container while having features such as _lazy loading_ that help indefinitely long containers stay performant.
 
@@ -30,7 +30,7 @@ To formalize the philosophy, there are four entities that should be known:
 
 These four entities provide the core functionality of SectionKit. They are designed to fulfill and abide by the philosophies mentioned above.
 
-First, in order to give developers the flexibility to constraint compatibility between section controllers and section providers, generics are used. Each section controller and section provider decides what is the type of its collection view's diffable data source section and item identifiers, just like can be done with `UICollectionViewDiffableDataSource` and `NSDiffableDataSourceSnapshot`. For example, the below section controller and provider are compatible:
+First, in order to give developers the flexibility to constraint compatibility between section controllers and section providers, generics are used. Each section controller and section provider decides what is the type of its collection view's diffable data source section and item identifiers, just like can be done with `UICollectionViewDiffableDataSource` and `NSDiffableDataSourceSnapshot`. For example, the below section controller and provider are compatible because their `SectionIdentifierType` and `ItemIdentifierType` are the same:
 
 ```swift
 class SectionController : CollectionSectionController<String, UUID> {}
@@ -43,7 +43,7 @@ class SectionProvider : CollectionSectionProvider {
 }
 ```
 
-Whereas the following `CollectionSectionProvider` is not compatible with the above declared `CollectionSectionController`:
+Whereas the following `CollectionSectionProvider` is not compatible with the above declared `CollectionSectionController` because the `ItemIdentifierType` differs:
 
 ```swift
 class SectionProvider : CollectionSectionProvider {
