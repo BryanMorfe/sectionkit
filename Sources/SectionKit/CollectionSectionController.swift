@@ -116,6 +116,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         ])
     }
     
+    /// Create an empty section controller.
+    public init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+    
     /// Creates a section controller with the specified section providers.
     public init(sectionProviders: [some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>]) {
         super.init(nibName: nil, bundle: nil)
@@ -141,7 +146,7 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         if let selectedIndexPaths = collectionView.indexPathsForSelectedItems {
             let map = sectionProviderIDToRelativeIndexPathsMap(from: selectedIndexPaths)
             let keys = map.keys
-            if keys.count != 1 || keys.first! != sectionProvider.id {
+            if keys.count >= 1 || (keys.count != 0 && keys.first! != sectionProvider.id) {
                 return false
             }
         }
@@ -687,10 +692,12 @@ public extension CollectionSectionController {
     
     /// Returns the number of items for the specified section index associated with the section provider.
     func numberOfItems(inSection section: Int, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
-        guard let offset = sectionOffset(for: sectionProvider) else {
+        guard let offset = sectionOffset(for: sectionProvider),
+              let context = sectionProviderContext(for: sectionProvider),
+            offset + section < offset + context.numberOfSections else {
             return nil
         }
-        return _collectionView.numberOfItems(inSection: section + offset)
+        return _collectionView.numberOfItems(inSection: offset + section)
     }
     
     /// Returns the number of sections displayed by the section controller for a section provider.
@@ -1167,7 +1174,7 @@ private extension CollectionSectionController {
         /// Insert sections in correct index
         if let sectionProviderIndex, sectionProviderIndex > 0 {
             let precedingSectionProviderContext = sectionProviderContexts[sectionProviderIndex - 1]
-            if let precedingSection = self.sectionIdentifiers(for: precedingSectionProviderContext.sectionProvider).first {
+            if let precedingSection = self.sectionIdentifiers(for: precedingSectionProviderContext.sectionProvider).last {
                 currentSnapshot.insertSections(newSnapshotSections, afterSection: precedingSection)
             } else {
                 currentSnapshot.appendSections(newSnapshotSections)
