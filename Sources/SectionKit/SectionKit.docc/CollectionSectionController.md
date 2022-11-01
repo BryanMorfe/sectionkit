@@ -8,6 +8,7 @@
 
 ### Creating a Section Controller
 
+- ``init()``
 - ``init(sectionProviders:)``
 - ``init(coder:)``
 

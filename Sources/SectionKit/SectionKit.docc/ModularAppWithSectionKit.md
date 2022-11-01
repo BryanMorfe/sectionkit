@@ -111,7 +111,7 @@ class DishHeaderDetailSectionProvider : CollectionSectionProvider<String, DishIt
     
     var cellProvider: CollectionSectionController<String, String>.CellProvider {{
         sectionController, indexPath, item in
-        return sectionController.dequeueConfiguredReusableCell(using: self.cellRegistration, for: indexPath, item: item)
+        return sectionController.dequeueConfiguredReusableCell(using: self.cellRegistration, for: indexPath, item: item, sectionProvider: self)
     }}
 
     var sectionProvider: CollectionSectionController<String, String>.SectionProvider {{
@@ -187,8 +187,8 @@ class DishHeaderDetailSectionProvider : CollectionSectionProvider<String, DishIt
 extension DishHeaderDetailSectionProvider : CollectionSectionControllerDelegate {
     func collectionSectionController(
         _ sectionController: CollectionSectionController<String, DishItemIdentifier>,
-        didSelectItemAt indexPath: IndexPath,
-        in collectionView: UICollectionView) {
+        didSelectItemAt indexPath: IndexPath
+    ) {
         /// Handle selections 
     }
 }

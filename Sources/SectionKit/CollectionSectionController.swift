@@ -294,13 +294,20 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
     
     @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
+        let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
+        if map.keys.count > 1 || map.keys.count == 0 {
+            /// Shouldn't happen since selection between multiple section providers is not allowed
+            return nil
+        }
+        
         guard let indexPath = indexPaths.first,
               let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
-              let indexPath = indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath) else {
+              let indexPaths = map[sectionProvider.id] else {
             return nil
         }
-        return context.delegate?.collectionSectionController(self, contextMenuConfigurationForItemsAt: [indexPath], point: point)
+        
+        return context.delegate?.collectionSectionController(self, contextMenuConfigurationForItemsAt: indexPaths, point: point)
     }
     
     @available(iOS, introduced: 13.0, deprecated: 16.0)
@@ -759,15 +766,9 @@ public extension CollectionSectionController {
     /// Returns the index paths for the selected items associated with the provided section provider.
     func indexPathsForSelectedItems(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath] {
         let indexPaths = collectionView.indexPathsForVisibleItems
-        var indexPathsForSelectedItems = [IndexPath]()
+        let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
         
-        for indexPath in indexPaths {
-            if let sectionProviderForIndexPath = sectionProviderForSectionWithIndex(indexPath.section), sectionProviderForIndexPath.id == sectionProvider.id, let indexPath = indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath) {
-                indexPathsForSelectedItems.append(indexPath)
-            }
-        }
-        
-        return indexPathsForSelectedItems
+        return map[sectionProvider.id] ?? []
     }
     
     /// Gets the cell object at the index path you specify.

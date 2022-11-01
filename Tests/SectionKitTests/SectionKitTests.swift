@@ -171,8 +171,221 @@ final class SectionKitTests: XCTestCase {
         XCTAssertEqual(sectionController.indexPath(for: "provider2.1.item.0", sectionProvider: provider2), IndexPath(item: 0, section: 1))
         XCTAssertEqual(sectionController.indexPath(for: "provider2.1.item.1", sectionProvider: provider2), IndexPath(item: 1, section: 1))
         XCTAssertEqual(sectionController.indexPath(for: "provider3.item.0", sectionProvider: provider3), IndexPath(item: 0, section: 0))
+    }
+    
+    func testNonEmptyProviderByRemovingProviderAnimatingDifferences_shouldSucceed() throws {
+        let provider1 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider1"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider1" : [ "provider1.item.0", "provider1.item.1", "provider1.item.2" ]
+            ]
+        )
         
-        /// Test Prefetching Data Source Methods
+        let provider2 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider2",
+                "provider2.1"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider2" : [ "provider2.item.0", "provider2.item.1" ],
+                "provider2.1" : [ "provider2.1.item.0", "provider2.1.item.1" ],
+            ]
+        )
+        
+        let provider3 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider3"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider3" : [ "provider3.item.0" ]
+            ]
+        )
+        
+        sectionController.addSectionProvider(provider1)
+        sectionController.addSectionProvider(provider2)
+        sectionController.addSectionProvider(provider3)
+        
+        sectionController.deleteSectionProvider(provider2)
+        
+        /// Original snapshot should not have `provider2`
+        var snapshot = (sectionController.collectionView.dataSource as! MockSectionController.DiffableDataSource).snapshot()
+        XCTAssertEqual(snapshot.sectionIdentifiers, ["provider1", "provider3"])
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider1"), provider1.sectionIdentifierToItemIdentifierMap["provider1"])
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider3"), provider3.sectionIdentifierToItemIdentifierMap["provider3"])
+        
+        /// Query snapshot relative to provider
+        snapshot = sectionController.snapshotForSectionProvider(provider1)
+        XCTAssertEqual(snapshot.sectionIdentifiers, provider1.sectionIdentifiers)
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider1"), provider1.sectionIdentifierToItemIdentifierMap["provider1"])
+        
+        snapshot = sectionController.snapshotForSectionProvider(provider3)
+        XCTAssertEqual(snapshot.sectionIdentifiers, provider3.sectionIdentifiers)
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider3"), provider3.sectionIdentifierToItemIdentifierMap["provider3"])
+        
+        /// Query number of sections relative to provider
+        XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider1), 1)
+        XCTAssertNil(sectionController.numberOfSections(forSectionProvider: provider2))
+        XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider3), 1)
+        
+        /// Query number of items relative to provider
+        XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider1), 3)
+        XCTAssertNil(sectionController.numberOfItems(inSection: 0, sectionProvider: provider2))
+        XCTAssertNil(sectionController.numberOfItems(inSection: 1, sectionProvider: provider2))
+        XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider3), 1)
+        
+        /// Query section identifiers relative to provider
+        XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider1), provider1.sectionIdentifiers[0])
+        XCTAssertNil(sectionController.sectionIdentifier(for: 0, sectionProvider: provider2))
+        XCTAssertNil(sectionController.sectionIdentifier(for: 1, sectionProvider: provider2))
+        XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider3), provider3.sectionIdentifiers[0])
+        
+        /// Query item identifiers relative to provider
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider1), "provider1.item.0")
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 0), sectionProvider: provider1), "provider1.item.1")
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 2, section: 0), sectionProvider: provider1), "provider1.item.2")
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider2))
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 0), sectionProvider: provider2))
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 1), sectionProvider: provider2))
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 1), sectionProvider: provider2))
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider3), "provider3.item.0")
+        
+        /// Query index paths for items relative to providers
+        XCTAssertEqual(sectionController.indexPath(for: "provider1.item.0", sectionProvider: provider1), IndexPath(item: 0, section: 0))
+        XCTAssertEqual(sectionController.indexPath(for: "provider1.item.1", sectionProvider: provider1), IndexPath(item: 1, section: 0))
+        XCTAssertEqual(sectionController.indexPath(for: "provider1.item.2", sectionProvider: provider1), IndexPath(item: 2, section: 0))
+        XCTAssertNil(sectionController.indexPath(for: "provider2.item.0", sectionProvider: provider2))
+        XCTAssertNil(sectionController.indexPath(for: "provider2.item.1", sectionProvider: provider2))
+        XCTAssertNil(sectionController.indexPath(for: "provider2.1.item.0", sectionProvider: provider2))
+        XCTAssertNil(sectionController.indexPath(for: "provider2.1.item.1", sectionProvider: provider2))
+        XCTAssertEqual(sectionController.indexPath(for: "provider3.item.0", sectionProvider: provider3), IndexPath(item: 0, section: 0))
+    }
+    
+    func testNonEmptyProviderByRemovingProviderReloadingData_shouldSucceed() throws {
+        let provider1 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider1"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider1" : [ "provider1.item.0", "provider1.item.1", "provider1.item.2" ]
+            ]
+        )
+        
+        let provider2 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider2",
+                "provider2.1"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider2" : [ "provider2.item.0", "provider2.item.1" ],
+                "provider2.1" : [ "provider2.1.item.0", "provider2.1.item.1" ],
+            ]
+        )
+        
+        let provider3 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider3"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider3" : [ "provider3.item.0" ]
+            ]
+        )
+        
+        sectionController.addSectionProvider(provider1)
+        sectionController.addSectionProvider(provider2)
+        sectionController.addSectionProvider(provider3)
+        
+        sectionController.deleteSectionProviderUsingReloadData(provider2)
+        
+        /// Original snapshot should not have `provider2`
+        var snapshot = (sectionController.collectionView.dataSource as! MockSectionController.DiffableDataSource).snapshot()
+        XCTAssertEqual(snapshot.sectionIdentifiers, ["provider1", "provider3"])
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider1"), provider1.sectionIdentifierToItemIdentifierMap["provider1"])
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider3"), provider3.sectionIdentifierToItemIdentifierMap["provider3"])
+        
+        /// Query snapshot relative to provider
+        snapshot = sectionController.snapshotForSectionProvider(provider1)
+        XCTAssertEqual(snapshot.sectionIdentifiers, provider1.sectionIdentifiers)
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider1"), provider1.sectionIdentifierToItemIdentifierMap["provider1"])
+        
+        snapshot = sectionController.snapshotForSectionProvider(provider3)
+        XCTAssertEqual(snapshot.sectionIdentifiers, provider3.sectionIdentifiers)
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider3"), provider3.sectionIdentifierToItemIdentifierMap["provider3"])
+        
+        /// Query number of sections relative to provider
+        XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider1), 1)
+        XCTAssertNil(sectionController.numberOfSections(forSectionProvider: provider2))
+        XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider3), 1)
+        
+        /// Query number of items relative to provider
+        XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider1), 3)
+        XCTAssertNil(sectionController.numberOfItems(inSection: 0, sectionProvider: provider2))
+        XCTAssertNil(sectionController.numberOfItems(inSection: 1, sectionProvider: provider2))
+        XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider3), 1)
+        
+        /// Query section identifiers relative to provider
+        XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider1), provider1.sectionIdentifiers[0])
+        XCTAssertNil(sectionController.sectionIdentifier(for: 0, sectionProvider: provider2))
+        XCTAssertNil(sectionController.sectionIdentifier(for: 1, sectionProvider: provider2))
+        XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider3), provider3.sectionIdentifiers[0])
+        
+        /// Query item identifiers relative to provider
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider1), "provider1.item.0")
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 0), sectionProvider: provider1), "provider1.item.1")
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 2, section: 0), sectionProvider: provider1), "provider1.item.2")
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider2))
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 0), sectionProvider: provider2))
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 1), sectionProvider: provider2))
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 1), sectionProvider: provider2))
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider3), "provider3.item.0")
+        
+        /// Query index paths for items relative to providers
+        XCTAssertEqual(sectionController.indexPath(for: "provider1.item.0", sectionProvider: provider1), IndexPath(item: 0, section: 0))
+        XCTAssertEqual(sectionController.indexPath(for: "provider1.item.1", sectionProvider: provider1), IndexPath(item: 1, section: 0))
+        XCTAssertEqual(sectionController.indexPath(for: "provider1.item.2", sectionProvider: provider1), IndexPath(item: 2, section: 0))
+        XCTAssertNil(sectionController.indexPath(for: "provider2.item.0", sectionProvider: provider2))
+        XCTAssertNil(sectionController.indexPath(for: "provider2.item.1", sectionProvider: provider2))
+        XCTAssertNil(sectionController.indexPath(for: "provider2.1.item.0", sectionProvider: provider2))
+        XCTAssertNil(sectionController.indexPath(for: "provider2.1.item.1", sectionProvider: provider2))
+        XCTAssertEqual(sectionController.indexPath(for: "provider3.item.0", sectionProvider: provider3), IndexPath(item: 0, section: 0))
+    }
+    
+    func testNonEmptyProvidersDelegate_shouldBeCalled() throws {
+        let provider1 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider1"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider1" : [ "provider1.item.0", "provider1.item.1", "provider1.item.2" ]
+            ]
+        )
+        
+        let provider2 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider2",
+                "provider2.1"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider2" : [ "provider2.item.0", "provider2.item.1" ],
+                "provider2.1" : [ "provider2.1.item.0", "provider2.1.item.1" ],
+            ]
+        )
+        
+        let provider3 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider3"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider3" : [ "provider3.item.0" ]
+            ]
+        )
+        
+        sectionController.addSectionProvider(provider1)
+        sectionController.addSectionProvider(provider2)
+        sectionController.addSectionProvider(provider3)
+        
+        /// Test Delegate Methods Get Called
         sectionController.addDelegate(self, sectionProvider: provider2)
         
         prepareForProtocolMessage()
@@ -186,6 +399,88 @@ final class SectionKitTests: XCTestCase {
         XCTAssert(protocolMessageReceived)
         indexPaths = try XCTUnwrap(indexPathsOfReference)
         XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        let _ = sectionController.collectionView(sectionController.collectionView, shouldDeselectItemAt: IndexPath(item: 0, section: 2))
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didDeselectItemAt: IndexPath(item: 0, section: 2))
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        let _ = sectionController.collectionView(sectionController.collectionView, shouldHighlightItemAt: IndexPath(item: 0, section: 2))
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didHighlightItemAt: IndexPath(item: 0, section: 2))
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        if #available(iOS 16, *) {
+            let _ = sectionController.collectionView(sectionController.collectionView, contextMenuConfigurationForItemsAt: [IndexPath(item: 0, section: 2)], point: .zero)
+        } else {
+            let _ = sectionController.collectionView(sectionController.collectionView, contextMenuConfigurationForItemAt: IndexPath(item: 0, section: 2), point: .zero)
+        }
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        prepareForProtocolMessage()
+        let _ = sectionController.collectionView(sectionController.collectionView, canEditItemAt: IndexPath(item: 0, section: 2))
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        if #available(iOS 16, *) {
+            prepareForProtocolMessage()
+            let _ = sectionController.collectionView(sectionController.collectionView, canPerformPrimaryActionForItemAt: IndexPath(item: 0, section: 2))
+            XCTAssert(protocolMessageReceived)
+            indexPaths = try XCTUnwrap(indexPathsOfReference)
+            XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+            
+            prepareForProtocolMessage()
+            sectionController.collectionView(sectionController.collectionView, performPrimaryActionForItemAt: IndexPath(item: 0, section: 2))
+            XCTAssert(protocolMessageReceived)
+            indexPaths = try XCTUnwrap(indexPathsOfReference)
+            XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        }
+        
+        /// Test Delegate Methods Don't Get Called
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didSelectItemAt: IndexPath(item: 0, section: 0))
+        XCTAssertFalse(protocolMessageReceived)
+        XCTAssertNil(indexPathsOfReference)
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didSelectItemAt: IndexPath(item: 0, section: 3))
+        XCTAssertFalse(protocolMessageReceived)
+        XCTAssertNil(indexPathsOfReference)
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didDeselectItemAt: IndexPath(item: 0, section: 0))
+        XCTAssertFalse(protocolMessageReceived)
+        XCTAssertNil(indexPathsOfReference)
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didDeselectItemAt: IndexPath(item: 0, section: 3))
+        XCTAssertFalse(protocolMessageReceived)
+        XCTAssertNil(indexPathsOfReference)
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didHighlightItemAt: IndexPath(item: 0, section: 0))
+        XCTAssertFalse(protocolMessageReceived)
+        XCTAssertNil(indexPathsOfReference)
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didHighlightItemAt: IndexPath(item: 0, section: 3))
+        XCTAssertFalse(protocolMessageReceived)
+        XCTAssertNil(indexPathsOfReference)
     }
 }
 
