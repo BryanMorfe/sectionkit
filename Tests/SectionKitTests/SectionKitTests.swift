@@ -252,39 +252,26 @@ final class SectionKitTests: XCTestCase {
         
         /// Query number of sections relative to provider
         XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider1), 1)
-        XCTAssertNil(sectionController.numberOfSections(forSectionProvider: provider2))
         XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider3), 1)
         
         /// Query number of items relative to provider
         XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider1), 3)
-        XCTAssertNil(sectionController.numberOfItems(inSection: 0, sectionProvider: provider2))
-        XCTAssertNil(sectionController.numberOfItems(inSection: 1, sectionProvider: provider2))
         XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider3), 1)
         
         /// Query section identifiers relative to provider
         XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider1), provider1.sectionIdentifiers[0])
-        XCTAssertNil(sectionController.sectionIdentifier(for: 0, sectionProvider: provider2))
-        XCTAssertNil(sectionController.sectionIdentifier(for: 1, sectionProvider: provider2))
         XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider3), provider3.sectionIdentifiers[0])
         
         /// Query item identifiers relative to provider
         XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider1), "provider1.item.0")
         XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 0), sectionProvider: provider1), "provider1.item.1")
         XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 2, section: 0), sectionProvider: provider1), "provider1.item.2")
-        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider2))
-        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 0), sectionProvider: provider2))
-        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 1), sectionProvider: provider2))
-        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 1), sectionProvider: provider2))
         XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider3), "provider3.item.0")
         
         /// Query index paths for items relative to providers
         XCTAssertEqual(sectionController.indexPath(for: "provider1.item.0", sectionProvider: provider1), IndexPath(item: 0, section: 0))
         XCTAssertEqual(sectionController.indexPath(for: "provider1.item.1", sectionProvider: provider1), IndexPath(item: 1, section: 0))
         XCTAssertEqual(sectionController.indexPath(for: "provider1.item.2", sectionProvider: provider1), IndexPath(item: 2, section: 0))
-        XCTAssertNil(sectionController.indexPath(for: "provider2.item.0", sectionProvider: provider2))
-        XCTAssertNil(sectionController.indexPath(for: "provider2.item.1", sectionProvider: provider2))
-        XCTAssertNil(sectionController.indexPath(for: "provider2.1.item.0", sectionProvider: provider2))
-        XCTAssertNil(sectionController.indexPath(for: "provider2.1.item.1", sectionProvider: provider2))
         XCTAssertEqual(sectionController.indexPath(for: "provider3.item.0", sectionProvider: provider3), IndexPath(item: 0, section: 0))
     }
     
@@ -312,39 +299,26 @@ final class SectionKitTests: XCTestCase {
         
         /// Query number of sections relative to provider
         XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider1), 1)
-        XCTAssertNil(sectionController.numberOfSections(forSectionProvider: provider2))
         XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider3), 1)
         
         /// Query number of items relative to provider
         XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider1), 3)
-        XCTAssertNil(sectionController.numberOfItems(inSection: 0, sectionProvider: provider2))
-        XCTAssertNil(sectionController.numberOfItems(inSection: 1, sectionProvider: provider2))
         XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider3), 1)
         
         /// Query section identifiers relative to provider
         XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider1), provider1.sectionIdentifiers[0])
-        XCTAssertNil(sectionController.sectionIdentifier(for: 0, sectionProvider: provider2))
-        XCTAssertNil(sectionController.sectionIdentifier(for: 1, sectionProvider: provider2))
         XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider3), provider3.sectionIdentifiers[0])
         
         /// Query item identifiers relative to provider
         XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider1), "provider1.item.0")
         XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 0), sectionProvider: provider1), "provider1.item.1")
         XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 2, section: 0), sectionProvider: provider1), "provider1.item.2")
-        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider2))
-        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 0), sectionProvider: provider2))
-        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 1), sectionProvider: provider2))
-        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 1), sectionProvider: provider2))
         XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider3), "provider3.item.0")
         
         /// Query index paths for items relative to providers
         XCTAssertEqual(sectionController.indexPath(for: "provider1.item.0", sectionProvider: provider1), IndexPath(item: 0, section: 0))
         XCTAssertEqual(sectionController.indexPath(for: "provider1.item.1", sectionProvider: provider1), IndexPath(item: 1, section: 0))
         XCTAssertEqual(sectionController.indexPath(for: "provider1.item.2", sectionProvider: provider1), IndexPath(item: 2, section: 0))
-        XCTAssertNil(sectionController.indexPath(for: "provider2.item.0", sectionProvider: provider2))
-        XCTAssertNil(sectionController.indexPath(for: "provider2.item.1", sectionProvider: provider2))
-        XCTAssertNil(sectionController.indexPath(for: "provider2.1.item.0", sectionProvider: provider2))
-        XCTAssertNil(sectionController.indexPath(for: "provider2.1.item.1", sectionProvider: provider2))
         XCTAssertEqual(sectionController.indexPath(for: "provider3.item.0", sectionProvider: provider3), IndexPath(item: 0, section: 0))
     }
     

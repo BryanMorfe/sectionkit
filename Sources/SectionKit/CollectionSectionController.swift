@@ -533,8 +533,7 @@ public extension CollectionSectionController {
         _ delegate: some CollectionSectionControllerDelegate<SectionIdentifierType, ItemIdentifierType>,
         sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
         guard let context = sectionProviderContext(for: sectionProvider) else {
-            // TODO: Throw error?
-            return
+            fatalError("Attempting to add a delegate for a section provider that does not exist!")
         }
         
         context.delegate = delegate
@@ -548,9 +547,10 @@ public extension CollectionSectionController {
     /// - Parameters:
     ///   - sectionProvider: The section provider for which an associated delegate is to be removed.
     func removeDelegate(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
-        if let context = sectionProviderContext(for: sectionProvider) {
-            context.delegate = nil
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to remove a delegate for a section provider that does not exist!")
         }
+        context.delegate = nil
     }
 }
 
@@ -570,8 +570,7 @@ public extension CollectionSectionController {
         _ prefetchingDataSource: some CollectionSectionControllerDataSourcePrefetching<SectionIdentifierType, ItemIdentifierType>,
         sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
         guard let context = sectionProviderContext(for: sectionProvider) else {
-            // TODO: Throw error?
-            return
+            fatalError("Attempting to add a prefetching data source for a section provider that does not exist!")
         }
         
         context.prefetchingDataSource = prefetchingDataSource
@@ -585,9 +584,10 @@ public extension CollectionSectionController {
     /// - Parameters:
     ///   - sectionProvider: The section provider for which an associated prefetching data source is to be removed.
     func removePrefetchingDataSource(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
-        if let context = sectionProviderContext(for: sectionProvider) {
-            context.prefetchingDataSource = nil
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to remove a prefetching data source for a section provider that does not exist!")
         }
+        context.prefetchingDataSource = nil
     }
 }
 
@@ -622,7 +622,7 @@ public extension CollectionSectionController {
     /// Deletes a section provider and removes all associated sections, optionally animating the changes.
     func deleteSectionProvider(_ sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, animatingDifferences: Bool = true, completion: (() -> Void)? = nil) {
         guard let context = sectionProviderContext(for: sectionProvider) else {
-            return
+            fatalError("Attempting to delete a section provider that does not exist!")
         }
         let snapshot = snapshotByRemovingSectionProvider(sectionProvider)
         sectionProviderContexts.removeAll(where: { $0.id == context.id })
@@ -633,7 +633,7 @@ public extension CollectionSectionController {
     /// Deletes a section provider and removes all associated sections by reloading the collection view.
     func deleteSectionProviderUsingReloadData(_ sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, completion: (() -> Void)? = nil) {
         guard let context = sectionProviderContext(for: sectionProvider) else {
-            return
+            fatalError("Attempting to delete a section provider that does not exist!")
         }
         let snapshot = snapshotByRemovingSectionProvider(sectionProvider)
         sectionProviderContexts.removeAll(where: { $0.id == context.id })
@@ -644,7 +644,7 @@ public extension CollectionSectionController {
     /// Deletes a section provider and removes all associated sections by reloading the collection view.
     func deleteSectionProviderUsingReloadData(_ sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) async {
         guard let context = sectionProviderContext(for: sectionProvider) else {
-            return
+            fatalError("Attempting to delete a section provider that does not exist!")
         }
         let snapshot = snapshotByRemovingSectionProvider(sectionProvider)
         sectionProviderContexts.removeAll(where: { $0.id == context.id })
@@ -699,8 +699,11 @@ public extension CollectionSectionController {
     
     /// Returns the number of items for the specified section index associated with the section provider.
     func numberOfItems(inSection section: Int, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         guard let offset = sectionOffset(for: sectionProvider),
-              let context = sectionProviderContext(for: sectionProvider),
             offset + section < offset + context.numberOfSections else {
             return nil
         }
@@ -710,13 +713,17 @@ public extension CollectionSectionController {
     /// Returns the number of sections displayed by the section controller for a section provider.
     func numberOfSections(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
         guard let context = sectionProviderContext(for: sectionProvider) else {
-            return nil
+            fatalError("Attempting to query a section provider that does not exist!")
         }
         return context.numberOfSections
     }
     
     /// An array of visible cells currently displayed by the section controller that belong to the provided section provider.
     func visibleCells(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [UICollectionViewCell] {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         var visibleCells = [UICollectionViewCell]()
         let allVisibleCells = collectionView.visibleCells
         
@@ -731,6 +738,10 @@ public extension CollectionSectionController {
     
     /// Gets an array of the visible supplementary views of the specified kind associated with a section provider.
     func visibleSupplementaryViews(ofKind elementKind: String, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [UICollectionReusableView] {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         var visibleSupplementaryViews = [UICollectionReusableView]()
         let indexPathsForVisibleSupplementaryViews = collectionView.indexPathsForVisibleSupplementaryElements(ofKind: elementKind)
         
@@ -745,6 +756,10 @@ public extension CollectionSectionController {
     
     /// Gets the layout information for the item at the specified index path for the provided section provider.
     func layoutAttributesForItem(at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewLayoutAttributes? {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
@@ -753,6 +768,10 @@ public extension CollectionSectionController {
     
     /// Gets the layout information for the specified supplementary view associated with the provided section provider.
     func layoutAttributesForSupplementaryElement(ofKind elementKind: String, at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewLayoutAttributes? {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
@@ -765,6 +784,10 @@ public extension CollectionSectionController {
     
     /// Returns the index paths for the selected items associated with the provided section provider.
     func indexPathsForSelectedItems(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath] {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         let indexPaths = collectionView.indexPathsForVisibleItems
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
         
@@ -773,6 +796,10 @@ public extension CollectionSectionController {
     
     /// Gets the cell object at the index path you specify.
     func cellForItem(at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewCell? {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
@@ -781,6 +808,10 @@ public extension CollectionSectionController {
     
     /// Gets the index path relative to the section provider for the specified cell.
     func indexPath(for cell: UICollectionViewCell, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> IndexPath? {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         guard let indexPath = collectionView.indexPath(for: cell) else {
             return nil
         }
@@ -789,6 +820,10 @@ public extension CollectionSectionController {
     
     /// Gets the index paths of the visible items in the section controller for a section provider.
     func indexPathsForVisibleItems(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath]? {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         let indexPaths = collectionView.indexPathsForVisibleItems
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
         return map[sectionProvider.id]
@@ -796,6 +831,10 @@ public extension CollectionSectionController {
     
     /// Gets the index paths of all visible supplementary views of the specified type in a section provider.
     func indexPathsForVisibleSupplementaryElements(ofKind elementKind: String, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> [IndexPath]? {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         let indexPaths = collectionView.indexPathsForVisibleSupplementaryElements(ofKind: elementKind)
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
         return map[sectionProvider.id]
@@ -803,6 +842,10 @@ public extension CollectionSectionController {
     
     /// Gets the supplementary view at the specified index path for a section provider.
     func supplementaryView(forElementKind elementKind: String, at indexPath: IndexPath, for sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionReusableView? {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
@@ -811,6 +854,10 @@ public extension CollectionSectionController {
     
     /// Selects an item at a specified index path relative to the section provider.
     func selectItem(at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, animated: Bool, scrollPosition: UICollectionView.ScrollPosition) {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to select an item in a section provider that does not exist!")
+        }
+        
         if let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) {
             collectionView.selectItem(at: indexPath, animated: animated, scrollPosition: scrollPosition)
         }
@@ -818,6 +865,10 @@ public extension CollectionSectionController {
     
     /// Deselects the item at the specified index path relative to the section provider.
     func deselectItem(at indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, animated: Bool) {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to deselect an item in a section provider that does not exist!")
+        }
+        
         if let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) {
             collectionView.deselectItem(at: indexPath, animated: animated)
         }
@@ -830,6 +881,10 @@ public extension CollectionSectionController {
         item: Item?,
         sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>
     ) -> Cell where Cell : UICollectionViewCell {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to dequeue a cell in a section provider that does not exist!")
+        }
+        
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             // TODO: Throw an error instead
             return Cell()
@@ -849,6 +904,10 @@ public extension CollectionSectionController {
     
     /// Dequeues a reusable cell object located by its identifier.
     func dequeueReusableCell(withReuseIdentifier identifier: String, for indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionViewCell {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to dequeue a cell in a section provider that does not exist!")
+        }
+        
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             // TODO: Throw an error instead
             return UICollectionViewCell()
@@ -862,6 +921,10 @@ public extension CollectionSectionController {
         for indexPath: IndexPath,
         sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>
     ) -> Supplementary where Supplementary : UICollectionReusableView {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to dequeue a supplementary in a section provider that does not exist!")
+        }
+        
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             // TODO: Throw an error instead
             return Supplementary()
@@ -881,6 +944,10 @@ public extension CollectionSectionController {
     
     /// Dequeues a reusable supplementary view located by its identifier and kind.
     func dequeueReusableSupplementaryView(ofKind elementKind: String, withReuseIdentifier identifier: String, for indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> UICollectionReusableView {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to dequeue a supplementary in a section provider that does not exist!")
+        }
+        
         guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             // TODO: Throw an error instead
             return UICollectionReusableView()
@@ -901,8 +968,11 @@ public extension CollectionSectionController {
     
     /// Returns an identifier for the item at the specified index path in the section controller for a section provider.
     func itemIdentifier(for indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> ItemIdentifierType? {
-        guard let context = sectionProviderContext(for: sectionProvider),
-              context.numberOfSections > 0,
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
+        guard context.numberOfSections > 0,
               let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
@@ -911,8 +981,11 @@ public extension CollectionSectionController {
     
     /// Returns an index path for the item with the specified identifier in the section controller for a section provider.
     func indexPath(for itemIdentifier: ItemIdentifierType, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> IndexPath? {
-        guard let context = sectionProviderContext(for: sectionProvider),
-              context.numberOfSections > 0,
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
+        guard context.numberOfSections > 0,
               let indexPath = dataSource.indexPath(for: itemIdentifier) else {
             return nil
         }
@@ -923,8 +996,11 @@ public extension CollectionSectionController {
     
     /// Returns an identifier for the section at the index you specify in the section controller for a section provider.
     func sectionIdentifier(for index: Int, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> SectionIdentifierType? {
-        guard let context = sectionProviderContext(for: sectionProvider),
-              context.numberOfSections > 0,
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
+        guard context.numberOfSections > 0,
               let sectionOffset = sectionOffset(for: sectionProvider) else {
             return nil
         }
@@ -933,12 +1009,17 @@ public extension CollectionSectionController {
     
     /// Returns an index for the section with the identifier you specify in the section controller for a section provider.
     func index(for sectionIdentifier: SectionIdentifierType, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
-        guard let context = sectionProviderContext(for: sectionProvider),
-              context.numberOfSections > 0,
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
+        guard context.numberOfSections > 0,
               let index = dataSource.index(for: sectionIdentifier),
-              let sectionOffset = sectionOffset(for: sectionProvider) else {
+              let sectionOffset = sectionOffset(for: sectionProvider),
+              index - sectionOffset >= 0 else {
             return nil
         }
+        
         return index - sectionOffset
     }
     
@@ -946,6 +1027,10 @@ public extension CollectionSectionController {
     
     /// Returns a representation of the current state of the data in the section controller for a section provider.
     func snapshotForSectionProvider(_ sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> DiffableDataSourceSnapshot {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to query a section provider that does not exist!")
+        }
+        
         var snapshot = DiffableDataSourceSnapshot()
         let sections = sectionIdentifiers(for: sectionProvider)
         snapshot.appendSections(sections)
@@ -959,6 +1044,10 @@ public extension CollectionSectionController {
     /// Updates the UI to reflect the state of the data in the snapshot, optionally animating the UI changes and
     /// executing a completion handler.
     func apply(_ snapshot: DiffableDataSourceSnapshot, animatingDifferences: Bool = true, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that does not exist!")
+        }
+        
         let completedSnapshot = snapshotByJoining(with: snapshot, for: sectionProvider)
         setNumberOfSections(for: sectionProvider, afterApplying: snapshot)
         dataSource.apply(completedSnapshot, animatingDifferences: animatingDifferences)
@@ -967,6 +1056,10 @@ public extension CollectionSectionController {
     /// Updates the UI to reflect the state of the data in the snapshot, optionally animating the UI changes and
     /// executing a completion handler.
     func apply(_ snapshot: DiffableDataSourceSnapshot, animatingDifferences: Bool = true, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, completion: (() -> Void)? = nil) {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that does not exist!")
+        }
+        
         let completedSnapshot = snapshotByJoining(with: snapshot, for: sectionProvider)
         setNumberOfSections(for: sectionProvider, afterApplying: snapshot)
         dataSource.apply(completedSnapshot, animatingDifferences: animatingDifferences, completion: completion)
@@ -975,6 +1068,10 @@ public extension CollectionSectionController {
     /// Resets the UI to reflect the state of the data in the snapshot without computing a diff or animating the
     /// changes.
     func applySnapshotUsingReloadData(_ snapshot: DiffableDataSourceSnapshot, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) async {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that does not exist!")
+        }
+        
         let completedSnapshot = snapshotByJoining(with: snapshot, for: sectionProvider)
         setNumberOfSections(for: sectionProvider, afterApplying: snapshot)
         await dataSource.applySnapshotUsingReloadData(completedSnapshot)
@@ -983,6 +1080,10 @@ public extension CollectionSectionController {
     /// Resets the UI to reflect the state of the data in the snapshot without computing a diff or animating the
     /// changes, optionally executing a completion handler.
     func applySnapshotUsingReloadData(_ snapshot: DiffableDataSourceSnapshot, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, completion: (() -> Void)? = nil) {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that does not exist!")
+        }
+        
         let completedSnapshot = snapshotByJoining(with: snapshot, for: sectionProvider)
         setNumberOfSections(for: sectionProvider, afterApplying: completedSnapshot)
         dataSource.applySnapshotUsingReloadData(completedSnapshot, completion: completion)
