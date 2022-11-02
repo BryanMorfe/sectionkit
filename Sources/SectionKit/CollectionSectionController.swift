@@ -492,7 +492,7 @@ private extension CollectionSectionController {
             guard let sectionProvider = self.sectionProvider(for: indexPath),
                   let relativeIndexPath = self.indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath) else {
                 /// Should never happen
-                return nil
+                fatalError("A fatal error occured while attempting to provide a cell for item at index path \(indexPath)!")
             }
 
             return sectionProvider.cellProvider(self, relativeIndexPath, itemIdentifier)
@@ -507,7 +507,7 @@ private extension CollectionSectionController {
             guard let sectionProvider = self.sectionProvider(for: indexPath),
                   let relativeIndexPath = self.indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath) else {
                 /// Should never happen
-                return nil
+                fatalError("A fatal error occured while attempting to provide a supplementary view at index path \(indexPath)!")
             }
             
             return sectionProvider.supplementaryViewProvider?(self, elementKind, relativeIndexPath)
@@ -826,7 +826,7 @@ public extension CollectionSectionController {
         
         let indexPaths = collectionView.indexPathsForVisibleItems
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
-        return map[sectionProvider.id]
+        return map[sectionProvider.id] ?? []
     }
     
     /// Gets the index paths of all visible supplementary views of the specified type in a section provider.
@@ -837,7 +837,7 @@ public extension CollectionSectionController {
         
         let indexPaths = collectionView.indexPathsForVisibleSupplementaryElements(ofKind: elementKind)
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
-        return map[sectionProvider.id]
+        return map[sectionProvider.id] ?? []
     }
     
     /// Gets the supplementary view at the specified index path for a section provider.
@@ -968,12 +968,11 @@ public extension CollectionSectionController {
     
     /// Returns an identifier for the item at the specified index path in the section controller for a section provider.
     func itemIdentifier(for indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> ItemIdentifierType? {
-        guard let context = sectionProviderContext(for: sectionProvider) else {
+        guard let _ = sectionProviderContext(for: sectionProvider) else {
             fatalError("Attempting to query a section provider that does not exist!")
         }
         
-        guard context.numberOfSections > 0,
-              let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
+        guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
         return dataSource.itemIdentifier(for: indexPath)
@@ -1004,6 +1003,11 @@ public extension CollectionSectionController {
               let sectionOffset = sectionOffset(for: sectionProvider) else {
             return nil
         }
+        
+        guard index < context.numberOfSections else {
+            fatalError("Index \(index) out of bounds for array with length \(context.numberOfSections)!")
+        }
+        
         return dataSource.sectionIdentifier(for: index + sectionOffset)
     }
     
@@ -1013,10 +1017,9 @@ public extension CollectionSectionController {
             fatalError("Attempting to query a section provider that does not exist!")
         }
         
-        guard context.numberOfSections > 0,
-              let index = dataSource.index(for: sectionIdentifier),
+        guard let index = dataSource.index(for: sectionIdentifier),
               let sectionOffset = sectionOffset(for: sectionProvider),
-              index - sectionOffset >= 0 else {
+              index - sectionOffset >= 0 && index - sectionOffset < context.numberOfSections else {
             return nil
         }
         
@@ -1199,7 +1202,7 @@ private extension CollectionSectionController {
     /// - Returns: Absolute index path for use in the collection view.
     func indexPathFromRelativeIndexPath(_ indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> IndexPath? {
         guard let context = sectionProviderContext(for: sectionProvider),
-              context.numberOfSections > 0,
+              indexPath.section < context.numberOfSections,
               let sectionOffset = sectionOffset(for: sectionProvider) else {
             return nil
         }

@@ -116,9 +116,9 @@ final class SectionKitTests: XCTestCase {
         XCTAssertEqual(sectionController.snapshotForSectionProvider(emptyProvider).numberOfSections, 0)
         XCTAssertEqual(sectionController.snapshotForSectionProvider(emptyProvider).numberOfItems, 0)
         XCTAssertEqual(sectionController.visibleCells(forSectionProvider: emptyProvider), [])
-        XCTAssertEqual(sectionController.indexPathsForVisibleItems(forSectionProvider: emptyProvider), nil)
+        XCTAssertEqual(sectionController.indexPathsForVisibleItems(forSectionProvider: emptyProvider), [])
         XCTAssertEqual(sectionController.visibleSupplementaryViews(ofKind: "", sectionProvider: emptyProvider), [])
-        XCTAssertEqual(sectionController.indexPathsForVisibleSupplementaryElements(ofKind: "", sectionProvider: emptyProvider), nil)
+        XCTAssertEqual(sectionController.indexPathsForVisibleSupplementaryElements(ofKind: "", sectionProvider: emptyProvider), [])
         
         XCTAssertEqual(sectionController.collectionView.numberOfSections, 0)
     }
@@ -353,6 +353,18 @@ final class SectionKitTests: XCTestCase {
         indexPaths = try XCTUnwrap(indexPathsOfReference)
         XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
         
+        prepareForProtocolMessage()
+        let _ = sectionController.collectionView(sectionController.collectionView, shouldBeginMultipleSelectionInteractionAt: IndexPath(item: 0, section: 2))
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didBeginMultipleSelectionInteractionAt: IndexPath(item: 0, section: 2))
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
         let _ = sectionController.collectionView(sectionController.collectionView, shouldHighlightItemAt: IndexPath(item: 0, section: 2))
         XCTAssert(protocolMessageReceived)
         indexPaths = try XCTUnwrap(indexPathsOfReference)
@@ -360,6 +372,18 @@ final class SectionKitTests: XCTestCase {
         
         prepareForProtocolMessage()
         sectionController.collectionView(sectionController.collectionView, didHighlightItemAt: IndexPath(item: 0, section: 2))
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, didUnhighlightItemAt: IndexPath(item: 0, section: 2))
+        XCTAssert(protocolMessageReceived)
+        indexPaths = try XCTUnwrap(indexPathsOfReference)
+        XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
+        
+        prepareForProtocolMessage()
+        sectionController.collectionView(sectionController.collectionView, willDisplay: UICollectionViewCell(), forItemAt: IndexPath(item: 0, section: 2))
         XCTAssert(protocolMessageReceived)
         indexPaths = try XCTUnwrap(indexPathsOfReference)
         XCTAssertEqual(indexPaths, [IndexPath(item: 0, section: 1)])
@@ -424,6 +448,25 @@ final class SectionKitTests: XCTestCase {
         XCTAssertFalse(protocolMessageReceived)
         XCTAssertNil(indexPathsOfReference)
     }
+    
+    func testAccessingUnownedResources_shouldReturnNilOrEmptyCollection() throws {
+        sectionController.addSectionProvider(provider1)
+        sectionController.addSectionProvider(provider2)
+        sectionController.addSectionProvider(provider3)
+        
+        /// Test results are `nil`
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 2), sectionProvider: provider1))
+        XCTAssertNil(sectionController.cellForItem(at: IndexPath(item: 0, section: 2), sectionProvider: provider1))
+        XCTAssertNil(sectionController.supplementaryView(forElementKind: "", at: IndexPath(item: 0, section: 2), for: provider1))
+        XCTAssertNil(sectionController.layoutAttributesForItem(at: IndexPath(item: 0, section: 2), sectionProvider: provider1))
+        XCTAssertNil(sectionController.index(for: "provider2", sectionProvider: provider1))
+        
+        /// Test results are empty collections
+        XCTAssertEqual(sectionController.indexPathsForSelectedItems(forSectionProvider: provider1), [])
+        XCTAssertEqual(sectionController.indexPathsForVisibleItems(forSectionProvider: provider1), [])
+        XCTAssertEqual(sectionController.visibleCells(forSectionProvider: provider1), [])
+        XCTAssertEqual(sectionController.visibleSupplementaryViews(ofKind: "", sectionProvider: provider1), [])
+    }
 }
 
 extension SectionKitTests : CollectionSectionControllerDelegate, CollectionSectionControllerDataSourcePrefetching {
@@ -473,6 +516,11 @@ extension SectionKitTests : CollectionSectionControllerDelegate, CollectionSecti
         indexPathsOfReference = [indexPath]
         protocolMessageReceived = true
         return true
+    }
+    
+    func collectionSectionController(_ sectionController: CollectionSectionController<String, String>, didBeginMultipleSelectionInterationAt indexPath: IndexPath) {
+        indexPathsOfReference = [indexPath]
+        protocolMessageReceived = true
     }
     
     func collectionSectionControllerDidEndMultipleSelectionInteration(_ sectionController: CollectionSectionController<String, String>) {
