@@ -35,7 +35,7 @@ public protocol CollectionSectionProvider<SectionIdentifierType, ItemIdentifierT
     ///   - sectionController: The section controller that will contain the section provider.
     func willMove(toSectionController sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>)
     
-    /// Informs the section provider that it has been added into the provided section controller.
+    /// Informs the section provider that it has been added into a section controller.
     ///
     /// The section controller calls this method after the section is added. At this point, you begin adding
     /// new sections and items with a diffable data source snapshot.
@@ -43,6 +43,13 @@ public protocol CollectionSectionProvider<SectionIdentifierType, ItemIdentifierT
     /// - Parameters:
     ///   - sectionController: The section controller that contains the section provider.
     func didMove(toSectionController sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>)
+    
+    /// Informs the section provider that it has been deleted from the section controller.
+    ///
+    /// The section controller calls this method after the section is deleted. At this point, you can begin
+    /// cancelling any asynchronous calls or downloads. The section provider must not query the
+    /// section controller after this method is called.
+    func didMoveFromSectionController()
 }
 
 public extension CollectionSectionProvider {
@@ -50,4 +57,5 @@ public extension CollectionSectionProvider {
     
     func willMove(toSectionController sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>) {}
     func didMove(toSectionController sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>) {}
+    func didMoveFromSectionController() {}
 }

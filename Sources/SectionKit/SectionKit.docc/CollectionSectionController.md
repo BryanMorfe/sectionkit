@@ -23,6 +23,10 @@
 - ``deleteSectionProviderUsingReloadData(_:)``
 - ``deleteSectionProviderUsingReloadData(_:completion:)``
 
+### Querying Number of Section Providers
+
+- ``numberOfSectionProviders``
+
 ### Identifying Items for Section Providers
 
 - ``itemIdentifier(for:sectionProvider:)``
@@ -36,7 +40,6 @@
 ### Updating Section Provider Data
 
 - ``snapshotForSectionProvider(_:)``
-- ``apply(_:animatingDifferences:sectionProvider:)``
 - ``apply(_:animatingDifferences:sectionProvider:completion:)``
 - ``applySnapshotUsingReloadData(_:sectionProvider:)``
 - ``applySnapshotUsingReloadData(_:sectionProvider:completion:)``
