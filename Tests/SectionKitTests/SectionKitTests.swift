@@ -35,13 +35,6 @@ extension MockSectionProvider {
     }
 }
 
-final class EmptySectionProvider : MockSectionProvider {
-    typealias SectionIdentifierType = String
-    typealias ItemIdentifierType = String
-    var sectionIdentifiers: [String] = []
-    var sectionIdentifierToItemIdentifierMap: [String : [String]] = [:]
-}
-
 final class ConfigurableMockSectionProvider : MockSectionProvider {
     typealias SectionIdentifierType = String
     typealias ItemIdentifierType = String
@@ -55,21 +48,64 @@ final class ConfigurableMockSectionProvider : MockSectionProvider {
     }
 }
 
-typealias MockSectionController = CollectionSectionController<String, String>
+class MockSectionController : CollectionSectionController<String, String> {
+    override init() {
+        super.init()
+        viewDidLoad()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        viewDidLoad()
+    }
+}
 
 final class SectionKitTests: XCTestCase {
     var sectionController: MockSectionController!
+    var provider1: ConfigurableMockSectionProvider!
+    var provider2: ConfigurableMockSectionProvider!
+    var provider3: ConfigurableMockSectionProvider!
+    var emptyProvider: ConfigurableMockSectionProvider!
     
     var protocolMessageReceived = false
     var indexPathsOfReference: [IndexPath]?
     
     override func setUp() {
         sectionController = MockSectionController()
-        sectionController.loadView()
+        
+        provider1 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider1"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider1" : [ "provider1.item.0", "provider1.item.1", "provider1.item.2" ]
+            ]
+        )
+        
+        provider2 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider2",
+                "provider2.1"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider2" : [ "provider2.item.0", "provider2.item.1" ],
+                "provider2.1" : [ "provider2.1.item.0", "provider2.1.item.1" ],
+            ]
+        )
+        
+        provider3 = ConfigurableMockSectionProvider(
+            sectionIdentifiers: [
+                "provider3"
+            ],
+            sectionIdentifierToItemIdentifierMap: [
+                "provider3" : [ "provider3.item.0" ]
+            ]
+        )
+        
+        emptyProvider = ConfigurableMockSectionProvider(sectionIdentifiers: [], sectionIdentifierToItemIdentifierMap: [:])
     }
     
     func testEmptyProvider_shouldBeEmptyOrZeroOrNil() throws {
-        let emptyProvider = EmptySectionProvider()
         sectionController.addSectionProvider(emptyProvider)
         
         XCTAssertNil(sectionController.sectionIdentifier(for: 0, sectionProvider: emptyProvider))
@@ -88,35 +124,6 @@ final class SectionKitTests: XCTestCase {
     }
     
     func testNonEmptyProviders_shouldSucceed() throws {
-        let provider1 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider1"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider1" : [ "provider1.item.0", "provider1.item.1", "provider1.item.2" ]
-            ]
-        )
-        
-        let provider2 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider2",
-                "provider2.1"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider2" : [ "provider2.item.0", "provider2.item.1" ],
-                "provider2.1" : [ "provider2.1.item.0", "provider2.1.item.1" ],
-            ]
-        )
-        
-        let provider3 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider3"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider3" : [ "provider3.item.0" ]
-            ]
-        )
-        
         sectionController.addSectionProvider(provider1)
         sectionController.addSectionProvider(provider2)
         sectionController.addSectionProvider(provider3)
@@ -173,36 +180,55 @@ final class SectionKitTests: XCTestCase {
         XCTAssertEqual(sectionController.indexPath(for: "provider3.item.0", sectionProvider: provider3), IndexPath(item: 0, section: 0))
     }
     
+    func testNonEmptyAndEmptyProviders_shouldSucceed() throws {
+        sectionController.addSectionProvider(provider1)
+        sectionController.addSectionProvider(emptyProvider)
+        sectionController.addSectionProvider(provider3)
+        
+        /// Query snapshot relative to provider
+        var snapshot = sectionController.snapshotForSectionProvider(provider1)
+        XCTAssertEqual(snapshot.sectionIdentifiers, provider1.sectionIdentifiers)
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider1"), provider1.sectionIdentifierToItemIdentifierMap["provider1"])
+        
+        snapshot = sectionController.snapshotForSectionProvider(emptyProvider)
+        XCTAssertEqual(snapshot.numberOfSections, 0)
+        XCTAssertEqual(snapshot.numberOfItems, 0)
+        
+        snapshot = sectionController.snapshotForSectionProvider(provider3)
+        XCTAssertEqual(snapshot.sectionIdentifiers, provider3.sectionIdentifiers)
+        XCTAssertEqual(snapshot.itemIdentifiers(inSection: "provider3"), provider3.sectionIdentifierToItemIdentifierMap["provider3"])
+        
+        /// Query number of sections relative to provider
+        XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider1), 1)
+        XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: emptyProvider), 0)
+        XCTAssertEqual(sectionController.numberOfSections(forSectionProvider: provider3), 1)
+        
+        /// Query number of items relative to provider
+        XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider1), 3)
+        XCTAssertNil(sectionController.numberOfItems(inSection: 0, sectionProvider: emptyProvider))
+        XCTAssertEqual(sectionController.numberOfItems(inSection: 0, sectionProvider: provider3), 1)
+        
+        /// Query section identifiers relative to provider
+        XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider1), provider1.sectionIdentifiers[0])
+        XCTAssertNil(sectionController.sectionIdentifier(for: 0, sectionProvider: emptyProvider))
+        XCTAssertEqual(sectionController.sectionIdentifier(for: 0, sectionProvider: provider3), provider3.sectionIdentifiers[0])
+        
+        /// Query item identifiers relative to provider
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider1), "provider1.item.0")
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 1, section: 0), sectionProvider: provider1), "provider1.item.1")
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 2, section: 0), sectionProvider: provider1), "provider1.item.2")
+        XCTAssertNil(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: emptyProvider))
+        XCTAssertEqual(sectionController.itemIdentifier(for: IndexPath(item: 0, section: 0), sectionProvider: provider3), "provider3.item.0")
+        
+        /// Query index paths for items relative to providers
+        XCTAssertEqual(sectionController.indexPath(for: "provider1.item.0", sectionProvider: provider1), IndexPath(item: 0, section: 0))
+        XCTAssertEqual(sectionController.indexPath(for: "provider1.item.1", sectionProvider: provider1), IndexPath(item: 1, section: 0))
+        XCTAssertEqual(sectionController.indexPath(for: "provider1.item.2", sectionProvider: provider1), IndexPath(item: 2, section: 0))
+        XCTAssertNil(sectionController.indexPath(for: "provider2.item.0", sectionProvider: emptyProvider))
+        XCTAssertEqual(sectionController.indexPath(for: "provider3.item.0", sectionProvider: provider3), IndexPath(item: 0, section: 0))
+    }
+    
     func testNonEmptyProviderByRemovingProviderAnimatingDifferences_shouldSucceed() throws {
-        let provider1 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider1"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider1" : [ "provider1.item.0", "provider1.item.1", "provider1.item.2" ]
-            ]
-        )
-        
-        let provider2 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider2",
-                "provider2.1"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider2" : [ "provider2.item.0", "provider2.item.1" ],
-                "provider2.1" : [ "provider2.1.item.0", "provider2.1.item.1" ],
-            ]
-        )
-        
-        let provider3 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider3"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider3" : [ "provider3.item.0" ]
-            ]
-        )
-        
         sectionController.addSectionProvider(provider1)
         sectionController.addSectionProvider(provider2)
         sectionController.addSectionProvider(provider3)
@@ -263,35 +289,6 @@ final class SectionKitTests: XCTestCase {
     }
     
     func testNonEmptyProviderByRemovingProviderReloadingData_shouldSucceed() throws {
-        let provider1 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider1"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider1" : [ "provider1.item.0", "provider1.item.1", "provider1.item.2" ]
-            ]
-        )
-        
-        let provider2 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider2",
-                "provider2.1"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider2" : [ "provider2.item.0", "provider2.item.1" ],
-                "provider2.1" : [ "provider2.1.item.0", "provider2.1.item.1" ],
-            ]
-        )
-        
-        let provider3 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider3"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider3" : [ "provider3.item.0" ]
-            ]
-        )
-        
         sectionController.addSectionProvider(provider1)
         sectionController.addSectionProvider(provider2)
         sectionController.addSectionProvider(provider3)
@@ -352,35 +349,6 @@ final class SectionKitTests: XCTestCase {
     }
     
     func testNonEmptyProvidersDelegate_shouldBeCalled() throws {
-        let provider1 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider1"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider1" : [ "provider1.item.0", "provider1.item.1", "provider1.item.2" ]
-            ]
-        )
-        
-        let provider2 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider2",
-                "provider2.1"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider2" : [ "provider2.item.0", "provider2.item.1" ],
-                "provider2.1" : [ "provider2.1.item.0", "provider2.1.item.1" ],
-            ]
-        )
-        
-        let provider3 = ConfigurableMockSectionProvider(
-            sectionIdentifiers: [
-                "provider3"
-            ],
-            sectionIdentifierToItemIdentifierMap: [
-                "provider3" : [ "provider3.item.0" ]
-            ]
-        )
-        
         sectionController.addSectionProvider(provider1)
         sectionController.addSectionProvider(provider2)
         sectionController.addSectionProvider(provider3)

@@ -105,7 +105,7 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
     /// overriding this method.
     override open func viewDidLoad() {
         super.viewDidLoad()
-        
+        _collectionView.dataSource = dataSource
         view.addSubview(_collectionView)
         
         NSLayoutConstraint.activate([
@@ -901,7 +901,9 @@ public extension CollectionSectionController {
     
     /// Returns an identifier for the item at the specified index path in the section controller for a section provider.
     func itemIdentifier(for indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> ItemIdentifierType? {
-        guard let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
+        guard let context = sectionProviderContext(for: sectionProvider),
+              context.numberOfSections > 0,
+              let indexPath = indexPathFromRelativeIndexPath(indexPath, sectionProvider: sectionProvider) else {
             return nil
         }
         return dataSource.itemIdentifier(for: indexPath)
@@ -909,7 +911,9 @@ public extension CollectionSectionController {
     
     /// Returns an index path for the item with the specified identifier in the section controller for a section provider.
     func indexPath(for itemIdentifier: ItemIdentifierType, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> IndexPath? {
-        guard let indexPath = dataSource.indexPath(for: itemIdentifier) else {
+        guard let context = sectionProviderContext(for: sectionProvider),
+              context.numberOfSections > 0,
+              let indexPath = dataSource.indexPath(for: itemIdentifier) else {
             return nil
         }
         return indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath)
@@ -919,7 +923,9 @@ public extension CollectionSectionController {
     
     /// Returns an identifier for the section at the index you specify in the section controller for a section provider.
     func sectionIdentifier(for index: Int, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> SectionIdentifierType? {
-        guard let sectionOffset = sectionOffset(for: sectionProvider) else {
+        guard let context = sectionProviderContext(for: sectionProvider),
+              context.numberOfSections > 0,
+              let sectionOffset = sectionOffset(for: sectionProvider) else {
             return nil
         }
         return dataSource.sectionIdentifier(for: index + sectionOffset)
@@ -927,7 +933,9 @@ public extension CollectionSectionController {
     
     /// Returns an index for the section with the identifier you specify in the section controller for a section provider.
     func index(for sectionIdentifier: SectionIdentifierType, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Int? {
-        guard let index = dataSource.index(for: sectionIdentifier),
+        guard let context = sectionProviderContext(for: sectionProvider),
+              context.numberOfSections > 0,
+              let index = dataSource.index(for: sectionIdentifier),
               let sectionOffset = sectionOffset(for: sectionProvider) else {
             return nil
         }
@@ -1070,11 +1078,13 @@ private extension CollectionSectionController {
     func sectionProviderForSectionWithIndex(_ index: Int) -> (any CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>)? {
         var offset = 0
         for sectionProviderContext in sectionProviderContexts {
-            let maxSectionIndex = offset + sectionProviderContext.numberOfSections - 1
-            if index <= maxSectionIndex {
-                return sectionProviderContext.sectionProvider
+            if sectionProviderContext.numberOfSections > 0 {
+                let maxSectionIndex = offset + sectionProviderContext.numberOfSections - 1
+                if index <= maxSectionIndex {
+                    return sectionProviderContext.sectionProvider
+                }
+                offset += sectionProviderContext.numberOfSections
             }
-            offset += sectionProviderContext.numberOfSections
         }
         return nil
     }
@@ -1087,7 +1097,9 @@ private extension CollectionSectionController {
     ///
     /// - Returns: Absolute index path for use in the collection view.
     func indexPathFromRelativeIndexPath(_ indexPath: IndexPath, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> IndexPath? {
-        guard let sectionOffset = sectionOffset(for: sectionProvider) else {
+        guard let context = sectionProviderContext(for: sectionProvider),
+              context.numberOfSections > 0,
+              let sectionOffset = sectionOffset(for: sectionProvider) else {
             return nil
         }
         return IndexPath(item: indexPath.item, section: indexPath.section + sectionOffset)
@@ -1101,7 +1113,9 @@ private extension CollectionSectionController {
     ///
     /// - Returns: The index path relative to the provided section provider.
     private func indexPathRelativeToSectionProvider(_ sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, indexPath: IndexPath) -> IndexPath? {
-        guard let sectionOffset = sectionOffset(for: sectionProvider) else {
+        guard let context = sectionProviderContext(for: sectionProvider),
+              context.numberOfSections > 0,
+              let sectionOffset = sectionOffset(for: sectionProvider) else {
             return nil
         }
         return IndexPath(item: indexPath.item, section: indexPath.section - sectionOffset)
