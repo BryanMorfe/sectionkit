@@ -1559,6 +1559,10 @@ private extension CollectionSectionController {
             currentSnapshot.appendItems(items, toSection: section)
         }
         
+        currentSnapshot.reloadItems(snapshot.reloadedItemIdentifiers + currentSnapshot.reloadedItemIdentifiers)
+        currentSnapshot.reconfigureItems(snapshot.reconfiguredItemIdentifiers + currentSnapshot.reconfiguredItemIdentifiers)
+        currentSnapshot.reloadSections(snapshot.reloadedSectionIdentifiers + currentSnapshot.reloadedSectionIdentifiers)
+        
         return currentSnapshot
     }
     
