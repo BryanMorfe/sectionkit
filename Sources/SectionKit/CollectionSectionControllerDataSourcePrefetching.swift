@@ -27,12 +27,43 @@ import UIKit
     associatedtype ItemIdentifierType : Hashable, Sendable
     
     /// Tells your prefetch data source object to begin preparing data for the cells at the supplied index paths.
+    ///
+    /// The section controller calls this method as the user scrolls, providing the index paths for cells it's likely
+    /// to display in the near future. Your implementation of this method is responsible for starting any
+    /// expensive data loading processes. The data loading must be performed asynchronously, and the results
+    /// made available to the ``CollectionSectionProvider/cellProvider`` closure that
+    /// requires it.
+    ///
+    /// The section controller doesn't call this method cells it requires immediately, so your code must not rely
+    /// on this method alone to load data. The order of the index paths provided represents the priority.
+    ///
+    /// > Important: This method only gets called for a prefetching data source associated with a section
+    /// provider if the items are associated with the section provider. In addition, the index paths are always
+    /// relative to the section provider to which the item belongs.
+    ///
+    /// - Parameters:
+    ///   - sectionController: The section controller issuing the prefetch request.
+    ///   - indexPaths: The index paths that specify the location of the items for which data is to be
+    ///   prefetched.
     func collectionSectionController(
         _ sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>,
         prefetchItemsAt indexPaths: [IndexPath]
     )
     
     /// Cancels a previously triggered data prefetch request.
+    ///
+    /// The section controller calls this method to cancel prefetch requests as cells scroll out of view.
+    /// Your implementation of this method is responsible for cancelling the operations initiated by
+    /// a previous call to ``collectionSectionController(_:prefetchItemsAt:)``.
+    ///
+    /// > Important: This method only gets called for a prefetching data source associated with a section
+    /// provider if the items are associated with the section provider. In addition, the index paths are always
+    /// relative to the section provider to which the item belongs.
+    ///
+    /// - Parameters:
+    ///   - sectionController: The section controller issuing the cancellations of the prefetch request.
+    ///   - indexPaths: The index paths that specify the location of the items for which data is no longer
+    ///   required.
     func collectionSectionController(
         _ sectionController: CollectionSectionController<SectionIdentifierType, ItemIdentifierType>,
         cancelPrefetchingForItemsAt indexPaths: [IndexPath]
