@@ -185,7 +185,9 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
                 /// Determine whether multiple items can be selected
                 && (!isAnyItemSelected || context.allowsMultipleSelection)
                 /// Determine whether multiple items can be selected given its editing status
-                && (!isEditingCollection && !isAnyItemSelected || context.allowsMultipleSelectionDuringEditing) else {
+                && ((!isEditingCollection && !isAnyItemSelected || context.allowsMultipleSelectionDuringEditing)
+                    || !isEditingCollection && isAnyItemSelected
+                    || isEditingCollection && !isAnyItemSelected) else {
             return false
         }
         
