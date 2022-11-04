@@ -15,7 +15,7 @@
 
 - ``didMove(toSectionController:)-5z6jk``
 - ``willMove(toSectionController:)-5ypln``
-- ``didMoveFromSectionController()-20np9``
+- ``didMoveFromSectionController()-930e``
 
 ### Providing Section Layouts
 

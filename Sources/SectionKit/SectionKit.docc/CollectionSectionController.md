@@ -83,10 +83,24 @@
 - ``selectItem(at:sectionProvider:animated:scrollPosition:)``
 - ``deselectItem(at:sectionProvider:animated:)``
 - ``allowsSelection``
+- ``setAllowsSelection(_:sectionProvider:)``
+- ``allowsSelection(forSectionProvider:)``
 - ``allowsMultipleSelection``
+- ``setAllowsMultipleSelection(_:sectionProvider:)``
+- ``allowsMultipleSelection(forSectionProvider:)``
 - ``allowsSelectionDuringEditing``
+- ``setAllowsSelectionDuringEditing(_:sectionProvider:)``
+- ``allowsSelectionDuringEditing(forSectionProvider:)``
 - ``allowsMultipleSelectionDuringEditing``
-- ``selectionFollowFocus``
+- ``setAllowsMultipleSelectionDuringEditing(_:sectionProvider:)``
+- ``allowsMultipleSelectionDuringEditing(forSectionProvider:)``
+- ``selectionFollowsFocus``
+- ``setSelectionFollowsFocus(_:sectionProvider:)``
+- ``selectionFollowsFocus(forSectionProvider:)``
+
+### Working with Edit Mode
+
+- ``isEditingCollection``
 
 ### Locating Items and Views for a Section Provider
 
@@ -126,3 +140,79 @@
 
 - ``register(_:forDecorationViewOfKind:)-44qpg``
 - ``register(_:forDecorationViewOfKind:)-4gpvi``
+
+### Managing Cell Selection for Section Providers
+
+- ``collectionView(_:shouldSelectItemAt:)``
+- ``collectionView(_:didSelectItemAt:)``
+- ``collectionView(_:shouldDeselectItemAt:)``
+- ``collectionView(_:didDeselectItemAt:)``
+- ``collectionView(_:shouldBeginMultipleSelectionInteractionAt:)``
+- ``collectionView(_:didBeginMultipleSelectionInteractionAt:)``
+- ``collectionViewDidEndMultipleSelectionInteraction(_:)``
+
+### Managing Cell Highlighting for Section Providers
+
+- ``collectionView(_:shouldHighlightItemAt:)``
+- ``collectionView(_:didHighlightItemAt:)``
+- ``collectionView(_:didUnhighlightItemAt:)``
+
+### Managing Addition and Removal of Views for Section Providers
+
+- ``collectionView(_:willDisplay:forItemAt:)``
+- ``collectionView(_:willDisplaySupplementaryView:forElementKind:at:)``
+- ``collectionView(_:didEndDisplaying:forItemAt:)``
+- ``collectionView(_:didEndDisplayingSupplementaryView:forElementOfKind:at:)``
+
+### Managing Context Menus for Section Providers
+
+- ``collectionView(_:willDisplayContextMenu:animator:)``
+- ``collectionView(_:willEndContextMenuInteraction:animator:)``
+- ``collectionView(_:willPerformPreviewActionForMenuWith:animator:)``
+- ``collectionView(_:contextMenuConfigurationForItemsAt:point:)``
+- ``collectionView(_:contextMenuConfiguration:highlightPreviewForItemAt:)``
+- ``collectionView(_:contextMenuConfiguration:dismissalPreviewForItemAt:)``
+
+### Managing Editing of Items for Section Providers
+
+- ``collectionView(_:canEditItemAt:)``
+
+### Managing Cell's Actions for Section Providers
+
+- ``collectionView(_:canPerformPrimaryActionForItemAt:)``
+- ``collectionView(_:performPrimaryActionForItemAt:)``
+
+### Managing Scene Transition for Section Providers
+
+- ``collectionView(_:sceneActivationConfigurationForItemAt:point:)``
+
+### Managing Spring-Loading Behavior for Section Providers
+
+- ``collectionView(_:shouldSpringLoadItemAt:with:)``
+
+### Managing Data Prefetching for Section Providers
+
+- ``collectionView(_:prefetchItemsAt:)``
+- ``collectionView(_:cancelPrefetchingForItemsAt:)``
+
+### Managing Scrolling and Dragging Events for Section Providers
+
+- ``scrollViewDidScroll(_:)``
+- ``scrollViewWillBeginDragging(_:)``
+- ``scrollViewWillEndDragging(_:withVelocity:targetContentOffset:)``
+- ``scrollViewDidEndDragging(_:willDecelerate:)``
+- ``scrollViewDidScrollToTop(_:)``
+- ``scrollViewWillBeginDecelerating(_:)``
+- ``scrollViewDidEndDecelerating(_:)``
+
+### Managing Scrolling Animations for Section Providers
+
+- ``scrollViewDidEndScrollingAnimation(_:)``
+
+### Managing Inset Changes for Section Providers
+
+- ``scrollViewDidChangeAdjustedContentInset(_:)``
+
+### Deprecated
+
+- ``collectionView(_:contextMenuConfigurationForItemAt:point:)``

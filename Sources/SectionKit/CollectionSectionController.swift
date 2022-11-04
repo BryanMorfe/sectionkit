@@ -150,6 +150,12 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
     // MARK: CollectionViewDelegate
     
     // MARK: Managing the selected cells
+    
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to delegate further. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
         /// Selection is not allowed between sections belonging to multiple section providers
         guard let sectionProvider = sectionProvider(for: indexPath) else {
@@ -159,7 +165,7 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         if let selectedIndexPaths = collectionView.indexPathsForSelectedItems {
             let map = sectionProviderIDToRelativeIndexPathsMap(from: selectedIndexPaths)
             let keys = map.keys
-            if keys.count >= 1 || (keys.count != 0 && keys.first! != sectionProvider.id) {
+            guard keys.count == 0 || (keys.count == 1 && keys.first! == sectionProvider.id) else {
                 return false
             }
         }
@@ -168,9 +174,29 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
               let indexPath = indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath) else {
             return true
         }
+        
+        let isAnyItemSelected = indexPathsForSelectedItems(forSectionProvider: sectionProvider).count > 0
+        
+        /// Determine whether item can be selected based on section provider settings
+        /// and collection view status.
+        guard context.allowsSelection
+                /// Determine whether single item can be selected based on editing status
+                && (!isEditingCollection || context.allowsSelectionDuringEditing)
+                /// Determine whether multiple items can be selected
+                && (!isAnyItemSelected || context.allowsMultipleSelection)
+                /// Determine whether multiple items can be selected given its editing status
+                && (!isEditingCollection && !isAnyItemSelected || context.allowsMultipleSelectionDuringEditing) else {
+            return false
+        }
+        
         return context.delegate?.collectionSectionController(self, shouldSelectItemAt: indexPath) ?? true
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -180,6 +206,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         context.delegate?.collectionSectionController(self, didSelectItemAt: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, shouldDeselectItemAt indexPath: IndexPath) -> Bool {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -189,6 +220,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, shouldDeselectItemAt: indexPath) ?? true
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -198,15 +234,25 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         context.delegate?.collectionSectionController(self, didDeselectItemAt: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, shouldBeginMultipleSelectionInteractionAt indexPath: IndexPath) -> Bool {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
               let indexPath = indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath) else {
-            return true
+            return false
         }
-        return context.delegate?.collectionSectionController(self, shouldBeginMultipleSelectionInterationAt: indexPath) ?? true
+        return context.delegate?.collectionSectionController(self, shouldBeginMultipleSelectionInterationAt: indexPath) ?? false
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, didBeginMultipleSelectionInteractionAt indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -216,6 +262,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         context.delegate?.collectionSectionController(self, didBeginMultipleSelectionInterationAt: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionViewDidEndMultipleSelectionInteraction(_ collectionView: UICollectionView) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionControllerDidEndMultipleSelectionInteration(self)
@@ -223,6 +274,12 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
     }
     
     // MARK: Managing cell highlighting
+    
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -232,6 +289,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, shouldHighlightItemAt: indexPath) ?? true
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -241,6 +303,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         context.delegate?.collectionSectionController(self, didHighlightItemAt: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -251,6 +318,12 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
     }
     
     // MARK: Tracking the addition and removal of views
+    
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -260,6 +333,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         context.delegate?.collectionSectionController(self, willDisplay: cell, forItemAt: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, willDisplaySupplementaryView view: UICollectionReusableView, forElementKind elementKind: String, at indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -269,6 +347,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         context.delegate?.collectionSectionController(self, willDisplaySupplementaryView: view, forElementKind: elementKind, at: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -278,6 +361,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         context.delegate?.collectionSectionController(self, didEndDisplaying: cell, forItemAt: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, didEndDisplayingSupplementaryView view: UICollectionReusableView, forElementOfKind elementKind: String, at indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -287,24 +375,44 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         context.delegate?.collectionSectionController(self, didEndDisplayingSupplementaryView: view, forElementOfKind: elementKind, at: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, willDisplayContextMenu configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionController(self, willDisplayContextMenu: configuration, with: animator)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, willEndContextMenuInteraction configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating?) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionController(self, willEndContextMenuInteraction: configuration, with: animator)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionController(self, willPerformPreviewActionForMenuWith: configuration, animator: animator)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
@@ -323,6 +431,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, contextMenuConfigurationForItemsAt: indexPaths, point: point)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     @available(iOS, introduced: 13.0, deprecated: 16.0)
     open func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         guard let sectionProvider = sectionProvider(for: indexPath),
@@ -333,6 +446,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, contextMenuConfigurationForItemAt: indexPath, point: point)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, highlightPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
         guard let sectionProvider = sectionProvider(for: indexPath),
@@ -343,6 +461,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, contextMenuConfiguration: configuration, highlightPreviewForItemAt: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, dismissalPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
         guard let sectionProvider = sectionProvider(for: indexPath),
@@ -353,6 +476,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, contextMenuConfiguration: configuration, dismissalPreviewForItemAt: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, canEditItemAt indexPath: IndexPath) -> Bool {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -362,16 +490,26 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, canEditItemAt: indexPath) ?? true
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, canPerformPrimaryActionForItemAt indexPath: IndexPath) -> Bool {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
               let indexPath = indexPathRelativeToSectionProvider(sectionProvider, indexPath: indexPath) else {
-            return true
+            return false
         }
-        return context.delegate?.collectionSectionController(self, canPerformPrimaryActionForItemAt: indexPath) ?? true
+        return context.delegate?.collectionSectionController(self, canPerformPrimaryActionForItemAt: indexPath) ?? false
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     @available(iOS 16, *)
     open func collectionView(_ collectionView: UICollectionView, performPrimaryActionForItemAt indexPath: IndexPath) {
         guard let sectionProvider = sectionProvider(for: indexPath),
@@ -382,6 +520,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         context.delegate?.collectionSectionController(self, performPrimaryActionForItemAt: indexPath)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, sceneActivationConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIWindowScene.ActivationConfiguration? {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -391,6 +534,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         return context.delegate?.collectionSectionController(self, sceneActivationConfigurationForItemAt: indexPath, with: point)
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func collectionView(_ collectionView: UICollectionView, shouldSpringLoadItemAt indexPath: IndexPath, with context: UISpringLoadedInteractionContext) -> Bool {
         guard let sectionProvider = sectionProvider(for: indexPath),
               let context = sectionProviderContext(for: sectionProvider),
@@ -401,6 +549,12 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
     }
     
     // MARK: Collection View Prefetching Data Source
+    
+    /// The section controller's implementation of this prefetching data source method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// prefetching data source to send the message. If this method is overriden,
+    /// `super` must always be called.
     open func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
         
@@ -410,6 +564,11 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
         }
     }
     
+    /// The section controller's implementation of this prefetching data source method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// prefetching data source to send the message. If this method is overriden,
+    /// `super` must always be called.
     open func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
         let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
         
@@ -421,48 +580,99 @@ open class CollectionSectionController<SectionIdentifierType, ItemIdentifierType
     
     // MARK: Scroll View Delegate Methods
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func scrollViewDidScroll(_ scrollView: UIScrollView) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionControllerDidScroll(self, in: scrollView)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionControllerWillBeginDragging(self, in: scrollView)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionControllerWillEndDragging(self, withVelocity: velocity, targetContentOffset: targetContentOffset, in: scrollView)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionControllerDidEndDragging(self, willDecelerate: decelerate, in: scrollView)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
+    open func scrollViewDidScrollToTop(_ scrollView: UIScrollView) {
+        for context in sectionProviderContexts {
+            context.delegate?.collectionSectionControllerDidScrollToTop(self, in: scrollView)
+        }
+    }
+    
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionControllerWillBeginDecelerating(self, in: scrollView)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionControllerDidEndDecelerating(self, in: scrollView)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionControllerDidEndScrollingAnimation(self, in: scrollView)
         }
     }
     
+    /// The section controller's implementation of this delegate method.
+    ///
+    /// This section controller's implementation determines which section provider
+    /// delegate to send the message. If this method is overriden, `super` must always
+    /// be called.
     open func scrollViewDidChangeAdjustedContentInset(_ scrollView: UIScrollView) {
         for context in sectionProviderContexts {
             context.delegate?.collectionSectionControllerDidChangeAdjustedContentInset(self, in: scrollView)
@@ -760,9 +970,108 @@ public extension CollectionSectionController {
         _collectionView.allowsSelection
     }
     
+    /// Sets whether selection is allowed for items in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. The default value is `true`.
+    /// If global selection is not allowed and this method is called with ``allowsSelection`` as
+    /// `true` for a valid section provider, global selection will be allowed. To know whether global
+    /// selection is allowed, query ``allowsSelection``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether items are selectable.
+    ///
+    /// - Parameters:
+    ///   - allowsSelection: A Boolean value that indicates whether users can select items
+    ///   associated with the section provider in the section controller.
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    func setAllowsSelection(_ allowsSelection: Bool, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        context.allowsSelection = allowsSelection
+        
+        /// Enable global selection if not enabled.
+        if allowsSelection && !self.allowsSelection {
+            _collectionView.allowsSelection = true
+        }
+    }
+    
+    /// Gets whether selection is allowed for items in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. To set whether selection is
+    /// allowed for a section provider, see ``setAllowsSelection(_:sectionProvider:)``.
+    /// To know whether global selection is allowed, query ``allowsSelection``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether items are selectable.
+    ///
+    /// - Parameters:
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    ///
+    /// - Returns: A Boolean value that indicates whether users can select items
+    ///   associated with the section provider in the section controller.
+    func allowsSelection(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Bool {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        return context.allowsSelection
+    }
+    
     /// A Boolean value that determines whether users can select more than one item in the collection view.
     var allowsMultipleSelection: Bool {
         _collectionView.allowsMultipleSelection
+    }
+    
+    /// Sets whether multi-selection is allowed for items in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. The default value is `false`.
+    /// If global multi-selection is not allowed and this method is called with
+    /// `allowsMultipleSelection` as `true` for a valid section provider, global multi-selection
+    /// will be allowed. To know whether global selection is allowed, query
+    /// ``allowsMultipleSelection``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether items are selectable.
+    ///
+    /// - Parameters:
+    ///   - allowsMultipleSelection: A Boolean value that indicates whether users can
+    ///   select multiple items associated with the section provider in the section controller.
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    func setAllowsMultipleSelection(_ allowsMultipleSelection: Bool, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        context.allowsMultipleSelection = allowsMultipleSelection
+        
+        /// Enable global selection if not enabled.
+        if allowsMultipleSelection && !self.allowsMultipleSelection {
+            _collectionView.allowsMultipleSelection = true
+        }
+    }
+    
+    /// Gets whether multi-selection is allowed for items in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. To set whether selection is
+    /// allowed for a section provider, see ``setAllowsMultipleSelection(_:sectionProvider:)``.
+    /// To know whether global selection is allowed, query ``allowsMultipleSelection``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether this behavior is allowed.
+    ///
+    /// - Parameters:
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    ///
+    /// - Returns: A Boolean value that indicates whether users can select multiple items
+    ///   associated with the section provider in the section controller.
+    func allowsMultipleSelection(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Bool {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        return context.allowsMultipleSelection
     }
     
     /// A Boolean value that determines whether users can select cells while the collection view is in editing mode.
@@ -770,14 +1079,176 @@ public extension CollectionSectionController {
         _collectionView.allowsSelectionDuringEditing
     }
     
+    /// Sets whether selection during editing is allowed for items in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. The default value is `false`.
+    /// If global selection during editing is not allowed and this method is called with
+    /// `allowsSelectionDuringEditing` as `true` for a valid section provider, the it will be
+    /// globally allowed. To know whether global selection during editing is allowed, query
+    /// ``allowsSelectionDuringEditing``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether this behavior is allowed.
+    ///
+    /// - Parameters:
+    ///   - allowsSelectionDuringEditing: A Boolean value that indicates whether users can
+    ///   select items associated with the section provider while the section controller is in editing mode.
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    func setAllowsSelectionDuringEditing(_ allowsSelectionDuringEditing: Bool, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        context.allowsSelectionDuringEditing = allowsSelectionDuringEditing
+        
+        /// Enable global selection if not enabled.
+        if allowsSelectionDuringEditing && !self.allowsSelectionDuringEditing {
+            _collectionView.allowsSelectionDuringEditing = true
+        }
+    }
+    
+    /// Gets whether selection during editing is allowed for items in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. To set whether selection
+    /// during editing is allowed for a section provider, see
+    /// ``setAllowsSelectionDuringEditing(_:sectionProvider:)``.
+    /// To know whether global selection during editing is allowed,
+    /// query ``allowsSelectionDuringEditing``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether this behavior is allowed.
+    ///
+    /// - Parameters:
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    ///
+    /// - Returns: A Boolean value that indicates whether users can select items associated with
+    /// the section provider while the section controller is in editing mode.
+    func allowsSelectionDuringEditing(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Bool {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        return context.allowsSelectionDuringEditing
+    }
+    
     /// A Boolean value that controls whether users can select more than one cell simultaneously in editing mode.
     var allowsMultipleSelectionDuringEditing: Bool {
         _collectionView.allowsMultipleSelectionDuringEditing
     }
     
+    /// Sets whether multi-selection during editing is allowed for items in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. The default value is `false`.
+    /// If global multi-selection during editing is not allowed and this method is called with
+    /// `allowsMultipleSelectionDuringEditing` as `true` for a valid section provider, the
+    /// it will be globally allowed. To know whether global selection during editing is allowed, query
+    /// ``allowsMultipleSelectionDuringEditing``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether this behavior is allowed.
+    ///
+    /// - Parameters:
+    ///   - allowsMultipleSelectionDuringEditing: A Boolean value that indicates whether users
+    ///   can select multiple items associated with the section provider while the section controller is in editing mode.
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    func setAllowsMultipleSelectionDuringEditing(_ allowsMultipleSelectionDuringEditing: Bool, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        context.allowsMultipleSelectionDuringEditing = allowsMultipleSelectionDuringEditing
+        
+        /// Enable global selection if not enabled.
+        if allowsMultipleSelectionDuringEditing && !self.allowsMultipleSelectionDuringEditing {
+            _collectionView.allowsMultipleSelectionDuringEditing = true
+        }
+    }
+    
+    /// Gets whether multi-selection during editing is allowed for items in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. To set whether multi-selection
+    /// during editing is allowed for a section provider, see
+    /// ``setAllowsMultipleSelectionDuringEditing(_:sectionProvider:)``.
+    /// To know whether global selection during editing is allowed,
+    /// query ``allowsMultipleSelectionDuringEditing``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether this behavior is allowed.
+    ///
+    /// - Parameters:
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    ///
+    /// - Returns: A Boolean value that indicates whether users can select multiple items associated
+    /// with the section provider while the section controller is in editing mode.
+    func allowsMultipleSelectionDuringEditing(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Bool {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        return context.allowsMultipleSelectionDuringEditing
+    }
+    
     /// A Boolean value that triggers an automatic selection when focus moves to a cell.
-    var selectionFollowFocus: Bool {
+    var selectionFollowsFocus: Bool {
         _collectionView.selectionFollowsFocus
+    }
+    
+    /// Sets whether an automatic selection should be triggered when focus moves to an
+    /// item in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. The default value is `false`.
+    /// If global automatic selection on focus is not enabled and this method is called with
+    /// `selectionFollowsFocus` as `true` for a valid section provider, then it will by globally
+    /// enabled. To know whether global selection during editing is allowed, query
+    /// ``selectionFollowsFocus``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether this behavior is allowed.
+    ///
+    /// - Parameters:
+    ///   - selectionFollowsFocus: A Boolean value that indicates whether items associated
+    ///   with a section provider should be automatically selected when focus moves to them.
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    func setSelectionFollowsFocus(_ selectionFollowsFocus: Bool, sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        context.selectionFollowsFocus = selectionFollowsFocus
+        
+        /// Enable global selection if not enabled.
+        if selectionFollowsFocus && !self.selectionFollowsFocus {
+            _collectionView.selectionFollowsFocus = true
+        }
+    }
+    
+    /// Gets whether an automatic selection should be triggered when focus moves to an
+    /// item in a section provider.
+    ///
+    /// This method only affects the items in the given section provider. To set whether selection
+    /// follows focus for a section provider, see
+    /// ``setSelectionFollowsFocus(_:sectionProvider:)``.
+    /// To know whether global selection follows focus, query ``selectionFollowsFocus``.
+    ///
+    /// > Note: Each section provider can and should be able decide the behavior of its own items,
+    /// therefore, it is ultimately the decision of the section provider whether this behavior is allowed.
+    ///
+    /// - Parameters:
+    ///   - sectionProvider: The section provider asking the controller. Must already exist in
+    ///   the controller.
+    ///
+    /// - Returns: A Boolean value that that triggers an automatic selection when focus moves
+    /// to an item associated with a section provider in the section controller.
+    func selectionFollowsFocus(forSectionProvider sectionProvider: some CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>) -> Bool {
+        guard let context = sectionProviderContext(for: sectionProvider) else {
+            fatalError("Attempting to modify a section provider that doesn't exist!")
+        }
+        return context.selectionFollowsFocus
+    }
+    
+    /// A Boolean value that determines whether the section controller is in editing mode.
+    var isEditingCollection: Bool {
+        _collectionView.isEditing
     }
     
     @available(iOS 16, *)
@@ -925,8 +1396,8 @@ public extension CollectionSectionController {
             fatalError("Attempting to query a section provider that does not exist!")
         }
         
-        let indexPaths = collectionView.indexPathsForVisibleItems
-        let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths)
+        let indexPaths = collectionView.indexPathsForSelectedItems
+        let map = sectionProviderIDToRelativeIndexPathsMap(from: indexPaths ?? [])
         
         return map[sectionProvider.id] ?? []
     }
@@ -1357,6 +1828,14 @@ private extension CollectionSectionController {
         weak var delegate: (any CollectionSectionControllerDelegate<SectionIdentifierType, ItemIdentifierType>)?
         weak var prefetchingDataSource: (any CollectionSectionControllerDataSourcePrefetching<SectionIdentifierType, ItemIdentifierType>)?
         
+        var allowsSelection = true
+        var allowsMultipleSelection = false
+        var allowsSelectionDuringEditing = false
+        var allowsMultipleSelectionDuringEditing = false
+        
+        // TODO: Determine default value based on the collection view.
+        var selectionFollowsFocus = false
+        
         init(sectionProvider: any CollectionSectionProvider<SectionIdentifierType, ItemIdentifierType>, numberOfSections: Int = 0) {
             self.sectionProvider = sectionProvider
             self.numberOfSections = numberOfSections
@@ -1559,9 +2038,29 @@ private extension CollectionSectionController {
             currentSnapshot.appendItems(items, toSection: section)
         }
         
-        currentSnapshot.reloadItems(snapshot.reloadedItemIdentifiers + currentSnapshot.reloadedItemIdentifiers)
-        currentSnapshot.reconfigureItems(snapshot.reconfiguredItemIdentifiers + currentSnapshot.reconfiguredItemIdentifiers)
-        currentSnapshot.reloadSections(snapshot.reloadedSectionIdentifiers + currentSnapshot.reloadedSectionIdentifiers)
+        let reloadedSectionIdentifiers = snapshot.reloadedSectionIdentifiers
+            + currentSnapshot.reloadedSectionIdentifiers
+                .filter {
+                    /// Only add the sections if they weren't removed
+                    currentSnapshot.indexOfSection($0) != nil
+                }
+        
+        let reloadedItemIdentifiers = snapshot.reloadedItemIdentifiers
+            + currentSnapshot.reloadedItemIdentifiers
+                .filter {
+                    /// Only add the items if they weren't removed
+                    currentSnapshot.indexOfItem($0) != nil
+                }
+        
+        let reconfiguredItemIdentifiers = snapshot.reconfiguredItemIdentifiers
+            + currentSnapshot.reconfiguredItemIdentifiers
+                .filter {
+                    /// Only add the items if they weren't removed
+                    currentSnapshot.indexOfItem($0) != nil
+                }
+        currentSnapshot.reloadSections(reloadedSectionIdentifiers)
+        currentSnapshot.reloadItems(reloadedItemIdentifiers)
+        currentSnapshot.reconfigureItems(reconfiguredItemIdentifiers)
         
         return currentSnapshot
     }
